@@ -1,16 +1,83 @@
-# React + Vite
+# ShipShield Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React application built with Vite for ShipShield, featuring routing and various UI components.
 
-Currently, two official plugins are available:
+## Project Structure
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```
+shipshield-frontend/
+├── .gitignore
+├── eslint.config.js
+├── index.html
+├── package-lock.json
+├── package.json
+├── README.md
+├── vite.config.js
+├── public/
+│   └── vite.svg
+└── src/
+    ├── App.jsx
+    ├── index.css
+    ├── main.jsx
+    ├── animations/
+    │   └── FadeIn.jsx
+    ├── assets/
+    ├── components/
+    │   ├── layout/
+    │   │   ├── Navbar.jsx
+    │   │   ├── PageShell.jsx
+    │   │   └── Sidebar.jsx
+    │   ├── score/
+    │   │   ├── ScoreCard.jsx
+    │   │   └── ShipScoreGauge.jsx
+    │   └── ui/
+    │       ├── Badge.jsx
+    │       ├── Button.jsx
+    │       └── Card.jsx
+    └── Pages/
+        ├── Dashboard.jsx
+        ├── FixPR.jsx
+        ├── Issues.jsx
+        ├── Landing.jsx
+        ├── Scan.jsx
+        └── Success.jsx
+```
 
-## React Compiler
+## Key Imports and Dependencies
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Main Application (App.jsx)
+- `BrowserRouter as Router, Routes, Route` from 'react-router-dom' - For client-side routing
+- Page components: Landing, Scan, FixPR, Issues, Dashboard, Success from './Pages/'
 
-## Expanding the ESLint configuration
+### Package Dependencies
+- **React**: ^19.2.0 - Core React library
+- **React DOM**: ^19.2.0 - React rendering for web
+- **React Router DOM**: ^7.12.0 - Declarative routing for React
+- **Framer Motion**: ^12.27.5 - Animation library
+- **Tailwind CSS**: ^4.1.18 - Utility-first CSS framework
+- **Recharts**: ^3.6.0 - Chart library for React
+- **clsx**: ^2.1.1 - Utility for constructing className strings conditionally
+- **tailwind-merge**: ^3.4.0 - Utility for merging Tailwind CSS classes
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Component Imports
+- UI components (Button, Card, Badge) from './components/ui/'
+- Layout components (Navbar, Sidebar, PageShell) from './components/layout/'
+- Score components (ShipScoreGauge, ScoreCard) from './components/score/'
+- Animation components (FadeIn) from './animations/'
+
+## Getting Started
+
+1. Install dependencies: `npm install`
+2. Start development server: `npm run dev`
+3. Build for production: `npm run build`
+4. Preview production build: `npm run preview`
+
+## Routing
+
+The application uses React Router with the following routes:
+- `/` - Landing page
+- `/scan` - Scan page
+- `/fixpr` - Fix PR page
+- `/issues` - Issues page
+- `/dashboard` - Dashboard page
+- `/success` - Success page
