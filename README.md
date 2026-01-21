@@ -2,7 +2,7 @@
 
 Ship-readiness checker for GitHub projects.
 
-## Team
+## Team Helios
 - Nife: Backend (scoring engine, GitHub API)
 - Israel: Backend (PR generation, deployment checks)
 - Idris: Frontend (dashboard, UI)
