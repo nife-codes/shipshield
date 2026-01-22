@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const { getRepoData } = require('./services/github');
+const { calculateScore } = require('./services/scoring');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -18,13 +19,15 @@ app.post('/api/analyze', async (req, res) => {
   
   try {
     const repoData = await getRepoData(repoUrl);
+    const deploymentData = {};
+    
+    const result = calculateScore(repoData, deploymentData);
     
     res.json({
-      score: 0,
-      message: 'Analysis in progress',
+      ...result,
       repoUrl,
       deploymentUrl,
-      repoData
+      analysisId: Date.now().toString()
     });
   } catch (error) {
     res.status(400).json({ error: error.message });
