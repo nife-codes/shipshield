@@ -38,7 +38,7 @@ export default function AuditMetricCard({
   const t = themeMap[theme];
 
   return (
-    <div className="w-full rounded-2xl hover:border-[#7B5CF6] transition-colors bg-white p-5 shadow-sm">
+    <div className="w-full rounded-2xl hover:border-[#7B5CF6] border transition-colors bg-white p-5 shadow-sm">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className={`p-2 rounded-lg ${t.icon}`}>

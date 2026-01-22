@@ -15,9 +15,23 @@ export default function SpinningScore({
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    const timeout = setTimeout(() => setProgress(score), 100);
-    return () => clearTimeout(timeout);
-  }, [score]);
+    let animationFrameId;
+    let startTime;
+
+    const animate = (currentTime) => {
+      if (!startTime) startTime = currentTime;
+      const elapsed = currentTime - startTime;
+      const percentage = Math.min(elapsed / duration, 1);
+      setProgress(Math.round(percentage * score));
+
+      if (percentage < 1) {
+        animationFrameId = requestAnimationFrame(animate);
+      }
+    };
+
+    animationFrameId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [score, duration]);
 
   const offset =
     circumference - (progress / 100) * circumference;
@@ -56,12 +70,12 @@ export default function SpinningScore({
       </svg>
 
       {/* Score text */}
-      <div className="absolute  text-center">
+      <div className="absolute text-center">
         <div
           className="font-semibold text-[#4F5BD5]"
           style={{ fontSize: size * 0.28 }}
         >
-         <h1>{progress}</h1> 
+          <h1>{progress}</h1>
         </div>
         <div className="text-xs tracking-widest text-gray-500">
           <p>SCORE</p>

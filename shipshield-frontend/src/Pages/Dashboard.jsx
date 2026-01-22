@@ -51,7 +51,7 @@ return (
     </div>
 
     {/* Spinning Score */}
-    <SpinningScore score={76} size={300} /> {/* increase size prop if supported */}
+    <SpinningScore score={56} size={300} /> 
   </div>
 
   <div className='flex gap-3'>
