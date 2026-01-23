@@ -45,7 +45,7 @@ const Scan = ({steps = []}) => {
 
 return (
     <section className='bg-[#F2F3F7] flex justify-center p-10 items-center min-h-screen'>
-         <main className='bg-white flex flex-col items-center rounded-lg p-10 max-w-max'>
+         <main className='bg-white flex flex-col border border-[#D9F5E6] items-center rounded-lg p-10 max-w-max'>
                     <h1 className='text-black uppercase text-2xl text-center font-bold'>Analyzing Repository</h1>
                     <p className='text-gray-600 font-medium text-sm text-center mt-3'>ShipSafe is running a comprehensive readiness audit on <span className='bg-[#F3F4F6] px-2 py-1 rounded text-[#6B7280] font-mono'>Repo name</span></p>
                     <div className='mt-8'>
