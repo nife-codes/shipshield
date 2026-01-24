@@ -37,7 +37,7 @@ const Success = () => {
   }, []);
 
   return (
-    <section className="bg-[#F2F3F7] flex justify-center p-10 items-center min-h-screen">
+    <section className="bg-[#F2F3F7] flex justify-center p-4 md:p-10 items-center min-h-screen">
       {showConfetti && <Confetti numberOfPieces={120} />}
 
       <main className="bg-white flex flex-col border border-[#D9F5E6] items-center rounded-lg p-10 max-w-max">
