@@ -73,9 +73,6 @@ return (
                 AI-powered auditing for your GitHub repositories. Detect security flaws,
                 performance bottlenecks, and readiness blockers in seconds.
             </p>
-            <div className="mt-10 flex justify-center w-full px-4">
-                <RepoInput/>
-            </div>
         </motion.div>
 
         <motion.div 

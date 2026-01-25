@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import CustomButton from '../components/ui/Button'
 import SpinningScore from '../components/score/SpinningScore'
 import AuditMetricCard from '../components/ui/AuditMetricCard'
+import RepoScanModal from '../components/Auth/RepoScanModal'
 import { NavLink } from 'react-router-dom'
 import {
   AlertTriangle, MoveRight, X,
@@ -14,6 +15,7 @@ import { motion } from 'framer-motion'
 
 
 const Dashboard = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -41,14 +43,18 @@ const Dashboard = () => {
           <h1 className='text-3xl font-bold text-black mt-1'>Readiness Audit</h1>
         </div>
 
-                <div className='flex flex-wrap gap-3 w-full lg:w-auto'>
-            <CustomButton variant="outline" className="w-full sm:w-auto">
-              Re-scan
-            </CustomButton>
-            <CustomButton className="w-full sm:w-auto">
-              Export Report
-            </CustomButton>
-          </div>
+        <div className='flex flex-wrap gap-3 w-full lg:w-auto'>
+          <CustomButton
+            variant="outline"
+            className="w-full sm:w-auto"
+            onClick={() => setIsModalOpen(true)}
+          >
+            Re-scan
+          </CustomButton>
+          <CustomButton className="w-full sm:w-auto">
+            Export Report
+          </CustomButton>
+        </div>
 
       </header>
 
@@ -61,7 +67,7 @@ const Dashboard = () => {
           className="flex flex-col lg:flex-row bg-gradient-to-b from-white to-[#4f5ad51a] border border-white rounded-xl p-8 gap-10 items-center w-full max-w-6xl shadow-sm"
         >
           {/* Card */}
-          <div className="max-w-lg flex flex-col gap-4 w-full">
+          <div className="max-w-lg flex bg-white p-7 rounded-lg flex-col gap-4 w-full">
             <p className="font-bold text-2xl text-black">Overall Ship Score</p>
             <p className="font-medium mt-2 text-[#64748B] text-base">
               Based on AI analysis of your codebase security, documentation coverage, test reliability, and deployment configurations.
@@ -149,6 +155,10 @@ const Dashboard = () => {
 
       </main>
 
+      <RepoScanModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </section>
   )
 }

@@ -6,6 +6,9 @@ import Issues from './Pages/Issues';
 import Dashboard from './Pages/Dashboard';
 import Success from './Pages/Success';
 
+import SignIn from './components/Auth/Signin';
+import SignUp from './components/Auth/Signup';
+
 import DashboardLayout from './components/layout/DashboardLayout';
 
 function App() {
@@ -15,6 +18,9 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/scan" element={<Scan />} />
         <Route path="/success" element={<Success />} />
+
+        <Route path="/SignIn" element={<SignIn />} />
+        <Route path="/SignUp" element={<SignUp />} />
 
         /* Dashboard Routes */
         <Route element={<DashboardLayout />}>
