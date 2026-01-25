@@ -3,31 +3,32 @@ import CustomButton from "../components/ui/Button";
 import SpinningScore from "../components/score/SpinningScore";
 import Confetti from "react-confetti";
 import { ShieldCheck, Zap, Bug } from "lucide-react";
-import { motion} from 'framer-motion'
+import { motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom';
 
 const Success = () => {
   const [showConfetti, setShowConfetti] = useState(true);
 
   const data = [
-  {
-    icon: ShieldCheck,
-    title: "Security Rating",
-    result: "A+",
-  },
-  {
-    icon: Zap,
-    title: "Performance",
-    result: "95/100",
-  },
-  {
-    icon: Bug,
-    title: "Issues Fixed",
-    result: "12",
-  },
-];
+    {
+      icon: ShieldCheck,
+      title: "Security Rating",
+      result: "A+",
+    },
+    {
+      icon: Zap,
+      title: "Performance",
+      result: "95/100",
+    },
+    {
+      icon: Bug,
+      title: "Issues Fixed",
+      result: "12",
+    },
+  ];
 
 
- 
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowConfetti(false);
@@ -36,15 +37,17 @@ const Success = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  const navigate = useNavigate();
+
   return (
     <section className="bg-[#F2F3F7] flex justify-center p-4 md:p-10 items-center min-h-screen">
       {showConfetti && <Confetti numberOfPieces={120} />}
 
       <motion.main
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ type: "spring", bounce: 0.1, duration: 0.8 }}
-              className="bg-white flex flex-col border border-[#D9F5E6] items-center rounded-lg p-6 md:p-10 w-full max-w-2xl">
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: "spring", bounce: 0.1, duration: 0.8 }}
+        className="bg-white flex flex-col border border-[#D9F5E6] items-center rounded-lg p-6 md:p-10 w-full max-w-2xl">
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
@@ -99,7 +102,7 @@ const Success = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.9 }}
         >
-          <CustomButton color="primary">
+          <CustomButton color="primary" onClick={() => navigate('/dashboard')}>
             scan another repo
           </CustomButton>
         </motion.div>
