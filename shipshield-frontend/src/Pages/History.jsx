@@ -1,6 +1,7 @@
 import React from 'react';
 import { FileText, Calendar, Clock, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { containerVariants, itemVariants } from '../animations/variants';
 
 const History = () => {
     // Mock data for past scans
@@ -13,27 +14,11 @@ const History = () => {
         { id: 6, repo: 'mobile-app-react-native', date: '1 month ago', score: 'B', scoreColor: 'text-blue-600 bg-blue-100', size: '12 MB' },
     ];
 
-    const containerVariants = {
-        hidden: { opacity: 0 },
-        visible: {
-            opacity: 1,
-            transition: {
-                staggerChildren: 0.1
-            }
-        }
-    };
 
-    const itemVariants = {
-        hidden: { y: 20, opacity: 0 },
-        visible: {
-            y: 0,
-            opacity: 1
-        }
-    };
 
     return (
-        <section className='min-h-screen bg-gray-50 p-6'>
-            <header className='mb-8'>
+        <section className='min-h-screen bg-gray-50'>
+            <header className='bg-white border-b border-[#E2E8F0] px-6 py-4  mb-4'>
                 <h1 className='text-3xl font-bold text-gray-900'>Scan History</h1>
                 <p className='text-gray-500 mt-2'>Review past audit reports and scores.</p>
             </header>
@@ -42,7 +27,7 @@ const History = () => {
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
-                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-6"
             >
                 {historyData.map((item) => (
                     <motion.div
@@ -51,7 +36,7 @@ const History = () => {
                         whileHover={{ scale: 1.02, translateY: -5 }}
                         className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all cursor-pointer group flex flex-col items-center text-center relative overflow-hidden"
                     >
-                        
+
                         <div className="absolute top-0 right-0 w-16 h-16 pointer-events-none">
                             <div className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-gray-100 rotate-45 group-hover:bg-gray-200 transition-colors"></div>
                         </div>

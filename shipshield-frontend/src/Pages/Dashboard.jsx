@@ -11,29 +11,14 @@ import {
   UploadCloud,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { containerVariants, itemVariants } from '../animations/variants'
 
 
 
 const Dashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
 
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1
-    }
-  };
 
   return (
     <section className='min-h-screen bg-gray-50'>
