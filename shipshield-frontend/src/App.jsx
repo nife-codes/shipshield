@@ -5,6 +5,7 @@ import FixPR from './Pages/FixPR';
 import Issues from './Pages/Issues';
 import Dashboard from './Pages/Dashboard';
 import Success from './Pages/Success';
+import History from './Pages/History';
 
 import SignIn from './components/Auth/Signin';
 import SignUp from './components/Auth/Signup';
@@ -24,9 +25,10 @@ function App() {
 
         /* Dashboard Routes */
         <Route element={<DashboardLayout />}>
-        <Route path="/fixpr" element={<FixPR />} />
-        <Route path="/issues" element={<Issues />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/fixpr" element={<FixPR />} />
+          <Route path="/issues" element={<Issues />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/history" element={<History />} />
         </Route>
 
       </Routes>

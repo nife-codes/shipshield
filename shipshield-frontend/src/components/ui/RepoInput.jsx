@@ -25,7 +25,7 @@ const RepoInput = ({ onSubmit, theme = 'dark', className = '' }) => {
                 className={`p-3 flex-1 focus:outline-none text-sm md:text-base ${isLight ? 'text-gray-900 placeholder-gray-500' : 'text-white placeholder-gray-400 bg-transparent'
                     }`}
             />
-            <CustomButton type="submit" variant={isLight ? 'default' : 'default'} className="rounded-none">
+            <CustomButton type="submit"  className="rounded-none">
                 Scan Repository
             </CustomButton>
         </form>

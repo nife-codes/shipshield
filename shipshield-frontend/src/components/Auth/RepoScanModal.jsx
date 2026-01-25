@@ -11,7 +11,7 @@ const RepoScanModal = ({ isOpen, onClose }) => {
         // For now, we simulate success and go to dashboard/scan.
         console.log("Scanning repo: ", url);
         onClose();
-        navigate('/dashboard');
+        navigate('/Scan');
     };
 
     return (

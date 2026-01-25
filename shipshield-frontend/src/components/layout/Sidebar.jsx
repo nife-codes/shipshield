@@ -5,7 +5,8 @@ import {
   LayoutDashboard,
   AlertTriangle,
   GitPullRequest,
-  X
+  X,
+  Clock
 } from "lucide-react";
 
 const Sidebar = ({ isOpen, onClose }) => {
@@ -13,6 +14,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     { label: "Overview", icon: LayoutDashboard, route: "/dashboard" },
     { label: "Issues", icon: AlertTriangle, route: "/issues" },
     { label: "Fix PR", icon: GitPullRequest, route: "/fixpr" },
+    { label: "History", icon: Clock, route: "/history" },
   ];
 
 

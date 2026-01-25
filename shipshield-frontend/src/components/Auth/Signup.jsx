@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import logo from '../../assets/logo.png' 
 import { Link, useNavigate } from 'react-router-dom';
 import CustomButton from '../ui/Button';
 import RepoScanModal from './RepoScanModal';
@@ -11,22 +12,12 @@ const SignUp = () => {
 
   const handleSignUp = (e) => {
     e.preventDefault();
-    // Simulate sign up success, then open modal
+    
     setIsModalOpen(true);
   };
 
   const handleDemoUser = () => {
-    // Demo user also triggers value flow? Or goes straight to dashboard?
-    // User said: "continue as a demo user ... when you sign up it should take you to a modal"
-    // Usually demo user skips auth. Does it skip the repo step?
-    // "when you sign up it should take you to a modal" -> implies the standard flow.
-    // "continue as a demo user" might imply skipping signup.
-    // Let's assume Demo User -> Dashboard directly OR Demo User -> Modal.
-    // Given the context of "Repo Input" being key, let's show the Modal for Demo too, or just Dashboard.
-    // I will make Demo User go to Dashboard directly for speed/ease, or Modal if they need to input a repo.
-    // Let's assume Demo User -> Dashboard (pre-populated state?).
-    // Actually, asking the user might be redundant. I'll just make Demo User -> Dashboard.
-    // But for "Sign Up" (form), it goes to Modal.
+    
     navigate('/dashboard');
   };
 
@@ -34,7 +25,12 @@ const SignUp = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Simple Header */}
       <div className="p-6">
-        <Link to="/" className="text-2xl font-bold text-gray-900">shipshield</Link>
+        <Link to="/" >
+        <div className="flex items-center">
+                <img src={logo} alt="ShipShield Logo" className="h-8 w-8 inline-block mr-2" />
+                <p className="text-black font-medium">shipshield</p>
+              </div>
+        </Link>
       </div>
 
       <div className="flex-1 flex items-center justify-center -mt-20 px-4">

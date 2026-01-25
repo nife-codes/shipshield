@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../layout/Navbar';
+import logo from '../../assets/logo.png'
 import CustomButton from '../ui/Button';
 
 // Assuming Navbar exists or I should check. 
@@ -23,8 +24,13 @@ const SignIn = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Simple Header */}
       <div className="p-6">
-        <Link to="/" className="text-2xl font-bold text-gray-900">shipshield</Link>
-      </div>
+              <Link to="/" >
+             <div className="flex items-center">
+                       <img src={logo} alt="ShipShield Logo" className="h-8 w-8 inline-block mr-2" />
+                       <p className='text-black font-medium'>shipshield</p>
+                     </div>
+              </Link>
+            </div>
 
       <div className="flex-1 flex items-center justify-center -mt-20 px-4">
         <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 w-full max-w-md">
