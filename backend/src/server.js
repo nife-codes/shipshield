@@ -24,7 +24,14 @@ app.post('/api/analyze', async (req, res) => {
     const result = calculateScore(repoData, deploymentData);
     
     res.json({
-      ...result,
+      score: result.score,
+      categories: {
+        deploymentReality: result.categories.deploymentReality,
+        repoCredibility: result.categories.repoCredibility,
+        productionSafety: result.categories.productionSafety,
+        developerExperience: result.categories.developerExperience
+      },
+      topIssues: result.topIssues,
       repoUrl,
       deploymentUrl,
       analysisId: Date.now().toString()
