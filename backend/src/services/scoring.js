@@ -1,3 +1,5 @@
+const { scanForSecrets } = require('../utils/secrets');
+
 function calculateScore(repoData, deploymentData) {
   let totalScore = 0;
   const categories = {
@@ -85,14 +87,22 @@ function analyzeProductionSafety(repoData) {
     issues.push('.env file present but no .env.example');
   }
 
-  const hasDockerfile = files.some(f => f === 'Dockerfile');
-  if (hasDockerfile) {
-  }
-
   const hasGitignore = files.some(f => f === '.gitignore');
   if (!hasGitignore) {
     score -= 2;
     issues.push('No .gitignore file');
+  }
+
+  const readme = repoData.readme || '';
+  const commits = repoData.commits || [];
+  const commitMessages = commits.map(c => c.commit.message).join(' ');
+  
+  const secretsInReadme = scanForSecrets(readme);
+  const secretsInCommits = scanForSecrets(commitMessages);
+  
+  if (secretsInReadme.length > 0 || secretsInCommits.length > 0) {
+    score -= 8;
+    issues.push('Potential secrets detected in code or commits');
   }
 
   return { score: Math.max(0, score), issues };
