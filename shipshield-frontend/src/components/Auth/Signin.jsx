@@ -4,10 +4,6 @@ import Navbar from '../layout/Navbar';
 import logo from '../../assets/logo.png'
 import CustomButton from '../ui/Button';
 
-// Assuming Navbar exists or I should check. 
-// I saw `import Navbar from "../components/layout/Navbar"` in Landing.jsx
-// But SignIn is a separate route. I'll include a simple header or just the form centered.
-// I'll keep it simple: Centered form on gray background.
 
 const SignIn = () => {
   const navigate = useNavigate();

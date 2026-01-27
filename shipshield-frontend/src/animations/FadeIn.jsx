@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { fadeIn } from './variants'; // make sure the path is correct
+import { fadeIn } from './variants'; 
 
 const FadeIn = ({ children, duration = 0.5, delay = 0 }) => {
   return (

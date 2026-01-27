@@ -7,8 +7,7 @@ const RepoScanModal = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
 
     const handleScan = (url) => {
-        // In a real app, we might validate the URL or start a scan process here.
-        // For now, we simulate success and go to dashboard/scan.
+        
         console.log("Scanning repo: ", url);
         onClose();
         navigate('/Scan');
