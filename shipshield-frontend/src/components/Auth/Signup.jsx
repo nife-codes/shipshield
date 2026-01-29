@@ -1,23 +1,38 @@
 import React, { useState } from 'react';
-import logo from '../../assets/logo.png' 
+import logo from '../../assets/logo.png'
 import { Link, useNavigate } from 'react-router-dom';
 import CustomButton from '../ui/Button';
 import RepoScanModal from './RepoScanModal';
+
+import { api } from '../../services/api';
 
 const SignUp = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSignUp = (e) => {
+  const handleSignUp = async (e) => {
     e.preventDefault();
-    
-    setIsModalOpen(true);
+    setLoading(true);
+    setError(null);
+
+    try {
+      // In this flow, we might sign up first, then open modal
+      // Or just open modal and sign up later? Use standard signup first.
+      await api.signUp(email, password);
+      setIsModalOpen(true);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDemoUser = () => {
-    
+
     navigate('/dashboard');
   };
 
@@ -26,10 +41,10 @@ const SignUp = () => {
       {/* Simple Header */}
       <div className="p-6">
         <Link to="/" >
-        <div className="flex items-center">
-                <img src={logo} alt="ShipShield Logo" className="h-8 w-8 inline-block mr-2" />
-                <p className="text-black font-medium">shipshield</p>
-              </div>
+          <div className="flex items-center">
+            <img src={logo} alt="ShipShield Logo" className="h-8 w-8 inline-block mr-2" />
+            <p className="text-black font-medium">shipshield</p>
+          </div>
         </Link>
       </div>
 

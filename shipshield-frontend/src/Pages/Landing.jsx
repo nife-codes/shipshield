@@ -1,5 +1,4 @@
 import Navbar from "../components/layout/Navbar"
-import RepoInput from "../components/ui/RepoInput"
 import {
     ShieldAlert,
     Gauge,
@@ -7,9 +6,11 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { containerVariantsStaggerBig as containerVariants, itemVariants } from "../animations/variants";
+import { useNavigate } from 'react-router-dom';
 
 
 const Landing = () => {
+    const navigate = useNavigate();
 
     const features = [
         {
@@ -54,6 +55,8 @@ const Landing = () => {
                         AI-powered auditing for your GitHub repositories. Detect security flaws,
                         performance bottlenecks, and readiness blockers in seconds.
                     </p>
+
+                
                 </motion.div>
 
                 <motion.div

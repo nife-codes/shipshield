@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
+import { NavLink, useLocation } from 'react-router-dom'
 import CustomButton from '../components/ui/Button'
 import SpinningScore from '../components/score/SpinningScore'
 import AuditMetricCard from '../components/ui/AuditMetricCard'
 import RepoScanModal from '../components/Auth/RepoScanModal'
-import { NavLink } from 'react-router-dom'
+
 import {
   AlertTriangle, MoveRight, X,
   FileText,
@@ -17,14 +18,73 @@ import { containerVariants, itemVariants } from '../animations/variants'
 
 const Dashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const location = useLocation();
+  const analysisData = location.state?.analysis;
 
+  // Helper to map 0-25 score to Grade/Color
+  const getGrade = (score) => {
+    if (score >= 22) return { grade: 'A', theme: 'success', badge: 'Excellent' };
+    if (score >= 18) return { grade: 'B', theme: 'info', badge: 'Good' };
+    if (score >= 14) return { grade: 'C', theme: 'warning', badge: 'Improve' };
+    return { grade: 'D', theme: 'danger', badge: 'Critical' };
+  };
 
+  const mapData = () => {
+    if (!analysisData) {
+      // Default/Placeholder data
+      return {
+        score: 56,
+        security: { val: 'C-', progress: 45, theme: 'danger', badge: 'Needs Work', desc: '3 High severity vulnerabilities detected' },
+        docs: { val: '58%', progress: 58, theme: 'warning', badge: 'Improve', desc: 'README missing setup instructions' },
+        testing: { val: '92%', progress: 92, theme: 'success', badge: 'Good', desc: 'All unit tests passed' },
+        deploy: { val: 'A', progress: 85, theme: 'info', badge: 'Stable', desc: 'Dockerfiles optimized' }
+      };
+    }
+
+    const { categories, score } = analysisData;
+    const sec = getGrade(categories.productionSafety.score);
+    const dep = getGrade(categories.deploymentReality.score);
+
+    return {
+      score: score,
+      security: {
+        val: sec.grade,
+        progress: (categories.productionSafety.score / 25) * 100,
+        theme: sec.theme,
+        badge: sec.badge,
+        desc: categories.productionSafety.issues[0] || 'No major issues found.'
+      },
+      docs: {
+        val: `${Math.round((categories.repoCredibility.score / 25) * 100)}%`,
+        progress: (categories.repoCredibility.score / 25) * 100,
+        theme: 'warning',
+        badge: 'Review',
+        desc: categories.repoCredibility.issues[0] || 'Documentation looks good.'
+      },
+      testing: {
+        val: `${Math.round((categories.developerExperience.score / 25) * 100)}%`,
+        progress: (categories.developerExperience.score / 25) * 100,
+        theme: 'success',
+        badge: 'Good',
+        desc: categories.developerExperience.issues[0] || 'Dev experience is solid.'
+      },
+      deploy: {
+        val: dep.grade,
+        progress: (categories.deploymentReality.score / 25) * 100,
+        theme: dep.theme,
+        badge: dep.badge,
+        desc: categories.deploymentReality.issues[0] || 'Deployment config valid.'
+      }
+    };
+  };
+
+  const data = mapData();
 
   return (
     <section className='min-h-screen bg-gray-50'>
       <header className='flex flex-col lg:flex-row justify-between items-start lg:items-center bg-white border-b border-[#E2E8F0] px-6 py-4 gap-4'>
         <div>
-          <p className='text-sm text-[#475569] font-medium'>Repo name</p>
+          <p className='text-sm text-[#475569] font-medium'>{analysisData?.repoUrl || 'Repo name'}</p>
           <h1 className='text-3xl font-bold text-black mt-1'>Readiness Audit</h1>
         </div>
 
@@ -60,9 +120,9 @@ const Dashboard = () => {
 
             <div className="flex flex-col sm:flex-row gap-4 mt-4 items-start sm:items-center">
               <div className="bg-[#FDE68A] flex items-center gap-2 rounded-lg font-bold py-2 px-4 text-[#B45309]">
-                <AlertTriangle size={20} /> not production ready
+                <AlertTriangle size={20} /> {data.score < 80 ? 'not production ready' : 'Production Ready'}
               </div>
-              <p className="text-[#64748B] text-sm mt-1 sm:mt-0">last scanned 2 minutes ago</p>
+              <p className="text-[#64748B] text-sm mt-1 sm:mt-0">last scanned just now</p>
             </div>
 
             <NavLink to="/issues" className="mt-6 inline-block group">
@@ -74,7 +134,7 @@ const Dashboard = () => {
 
           {/* Spinning Score */}
           <div className="flex-1 flex justify-center">
-            <SpinningScore score={56} size={250} />
+            <SpinningScore score={data.score} size={250} />
           </div>
         </motion.div>
 
@@ -88,12 +148,12 @@ const Dashboard = () => {
             <AuditMetricCard
               title="Security Audit"
               icon={X}
-              value="C-"
+              value={data.security.val}
               valueLabel="Critical Issues"
-              badge="Needs Work"
-              description="3 High severity vulnerabilities detected in package.json"
-              progress={45}
-              theme="danger"
+              badge={data.security.badge}
+              description={data.security.desc}
+              progress={data.security.progress}
+              theme={data.security.theme}
             />
           </motion.div>
 
@@ -101,12 +161,12 @@ const Dashboard = () => {
             <AuditMetricCard
               title="Documentation"
               icon={FileText}
-              value="58%"
+              value={data.docs.val}
               valueLabel="Coverage"
-              badge="Improve"
-              description="README.md is missing setup instructions. API docs are partial."
-              progress={58}
-              theme="warning"
+              badge={data.docs.badge}
+              description={data.docs.desc}
+              progress={data.docs.progress}
+              theme={data.docs.theme}
             />
           </motion.div>
 
@@ -114,12 +174,12 @@ const Dashboard = () => {
             <AuditMetricCard
               title="CI & Testing"
               icon={CheckCircle}
-              value="92%"
+              value={data.testing.val}
               valueLabel="Pass Rate"
-              badge="Good"
-              description="All unit tests passed. Integration tests coverage is robust."
-              progress={92}
-              theme="success"
+              badge={data.testing.badge}
+              description={data.testing.desc}
+              progress={data.testing.progress}
+              theme={data.testing.theme}
             />
           </motion.div>
 
@@ -127,12 +187,12 @@ const Dashboard = () => {
             <AuditMetricCard
               title="Deployment"
               icon={UploadCloud}
-              value="A"
+              value={data.deploy.val}
               valueLabel="Config Score"
-              badge="Stable"
-              description="Dockerfiles are optimized. Kubernetes manifests validated."
-              progress={85}
-              theme="info"
+              badge={data.deploy.badge}
+              description={data.deploy.desc}
+              progress={data.deploy.progress}
+              theme={data.deploy.theme}
             />
           </motion.div>
 

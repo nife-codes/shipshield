@@ -53,7 +53,7 @@ const Success = () => {
           animate={{ scale: 1 }}
           transition={{ delay: 0.2, type: "spring", bounce: 0.5 }}
         >
-          <SpinningScore score={95} size={150} />
+          <SpinningScore score={score} size={150} />
         </motion.div>
 
         <motion.h1
@@ -61,8 +61,12 @@ const Success = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
           className="text-black font-bold text-2xl uppercase text-center mt-3">
-          Your project is now <br />
-          ready to <span className="text-[#7B5CF6]">ship!</span>
+          {score >= 75 ? (
+            <>Your project is now <br />
+            ready to <span className="text-[#7B5CF6]">ship!</span></>
+          ) : (
+            <>Analysis Complete</>
+          )}
         </motion.h1>
 
         <motion.p
@@ -70,9 +74,11 @@ const Success = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
           className="text-[#6B7280] text-sm text-center mt-2">
-          Excellent work. All critical vulnerabilities have been patched and code
-          quality <br />
-          metrics meet the deployment threshold
+          {score >= 75 ? (
+            <>Excellent work. Your repository meets deployment standards with a score of {score}/100.</>
+          ) : (
+            <>Your repository has been analyzed. Review the issues below to improve your score.</>
+          )}
         </motion.p>
 
         <motion.div
@@ -97,13 +103,37 @@ const Success = () => {
 
         <hr className="text-[#b4b4b494] w-full my-6" />
 
+        {topIssues.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7 }}
+            className="w-full mt-6"
+          >
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">Top Issues Found:</h3>
+            <div className="space-y-2">
+              {topIssues.map((issue, index) => (
+                <div key={index} className="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <p className="text-red-800 text-sm">{issue}</p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        <hr className="text-[#b4b4b494] w-full my-6" />
+
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.9 }}
+          className="flex gap-4"
         >
-          <CustomButton color="primary" onClick={() => navigate('/dashboard')}>
-            scan another repo
+          <CustomButton color="primary" onClick={() => navigate('/fixpr', { state: { analysis } })}>
+            Generate Fix PR
+          </CustomButton>
+          <CustomButton color="secondary" onClick={() => navigate('/')}>
+            Scan Another Repo
           </CustomButton>
         </motion.div>
       </motion.main>

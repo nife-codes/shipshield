@@ -4,15 +4,49 @@ import { motion } from 'framer-motion';
 import { containerVariants, itemVariants } from '../animations/variants';
 
 const History = () => {
-    // Mock data for past scans
-    const historyData = [
-        { id: 1, repo: 'shipshield-frontend', date: '2 mins ago', score: 'B+', scoreColor: 'text-yellow-600 bg-yellow-100', size: '2.4 MB' },
-        { id: 2, repo: 'backend-api-v2', date: 'Yesterday', score: 'A', scoreColor: 'text-green-600 bg-green-100', size: '1.8 MB' },
-        { id: 3, repo: 'auth-service', date: '2 days ago', score: 'C', scoreColor: 'text-red-600 bg-red-100', size: '850 KB' },
-        { id: 4, repo: 'legacy-monolith', date: 'Last week', score: 'F', scoreColor: 'text-red-700 bg-red-200', size: '150 MB' },
-        { id: 5, repo: 'design-system', date: '2 weeks ago', score: 'A+', scoreColor: 'text-green-700 bg-green-200', size: '5.2 MB' },
-        { id: 6, repo: 'mobile-app-react-native', date: '1 month ago', score: 'B', scoreColor: 'text-blue-600 bg-blue-100', size: '12 MB' },
-    ];
+    const [historyData, setHistoryData] = React.useState([]);
+
+    React.useEffect(() => {
+        const saved = JSON.parse(localStorage.getItem('shipshield_history') || '[]');
+
+        // Helper to map score to Grade
+        const getGrade = (score) => {
+            if (score >= 90) return 'A+'; // Adjusted threshold
+            if (score >= 80) return 'A';
+            if (score >= 70) return 'B';
+            if (score >= 50) return 'C';
+            return 'F';
+        };
+
+        const getColor = (grade) => {
+            if (grade.startsWith('A')) return 'text-green-700 bg-green-200';
+            if (grade.startsWith('B')) return 'text-blue-600 bg-blue-100';
+            if (grade.startsWith('C')) return 'text-yellow-600 bg-yellow-100';
+            return 'text-red-700 bg-red-200';
+        };
+
+        const formatted = saved.map(item => {
+            const grade = getGrade(item.score);
+            return {
+                id: item.id,
+                repo: item.repo.replace('https://github.com/', ''),
+                date: new Date(item.date).toLocaleDateString(),
+                score: grade,
+                scoreColor: getColor(grade),
+                size: 'N/A' // Size not currently in analysis result
+            };
+        });
+
+        if (formatted.length === 0) {
+            // Keep mock data if empty? Or just show empty. Let's show mock if empty for demo.
+            setHistoryData([
+                { id: 1, repo: 'shipshield-frontend', date: '2 mins ago', score: 'B+', scoreColor: 'text-yellow-600 bg-yellow-100', size: '2.4 MB' },
+                { id: 2, repo: 'backend-api-v2', date: 'Yesterday', score: 'A', scoreColor: 'text-green-600 bg-green-100', size: '1.8 MB' },
+            ]);
+        } else {
+            setHistoryData(formatted);
+        }
+    }, []);
 
 
 

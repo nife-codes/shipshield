@@ -7,10 +7,9 @@ const RepoScanModal = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
 
     const handleScan = (url) => {
-        
         console.log("Scanning repo: ", url);
         onClose();
-        navigate('/Scan');
+        navigate('/Scan', { state: { repoUrl: url } });
     };
 
     return (
