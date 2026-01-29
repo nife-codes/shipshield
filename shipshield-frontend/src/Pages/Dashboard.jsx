@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import CustomButton from '../components/ui/Button'
 import SpinningScore from '../components/score/SpinningScore'
+import AuditMetricCard from '../components/ui/AuditMetricCard'
+import RepoScanModal from '../components/Auth/RepoScanModal'
 import { Skeleton } from '../components/ui/Skeleton'
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-
 
 import {
   AlertTriangle, MoveRight, X,
@@ -111,66 +110,6 @@ const Dashboard = () => {
 
   const data = mapData();
 
-  const handleExport = () => {
-    if (!analysisData) return;
-
-    const doc = new jsPDF();
-    const repoName = analysisData.repoUrl?.replace('https://github.com/', '') || 'Repository';
-
-    // Header
-    doc.setFontSize(20);
-    doc.text('ShipShield Readiness Audit', 14, 22);
-
-    doc.setFontSize(11);
-    doc.setTextColor(100);
-    doc.text(`Repo: ${analysisData.repoUrl}`, 14, 32);
-    doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 38);
-
-    // Score
-    doc.setFillColor(240, 240, 240);
-    doc.rect(14, 45, 182, 30, 'F');
-    doc.setFontSize(16);
-    doc.setTextColor(0);
-    doc.text(`Overall Score: ${analysisData.score}/100`, 20, 60);
-    doc.setFontSize(12);
-    doc.text(analysisData.score < 80 ? 'Status: Not Production Ready' : 'Status: Production Ready', 20, 70);
-
-    // Metrics Table
-    const { categories } = analysisData;
-    const tableData = [
-      ['Category', 'Score', 'Status', 'Key Findings'],
-      ['Production Safety', categories?.productionSafety?.score || '-', getGrade(categories?.productionSafety?.score).badge, categories?.productionSafety?.issues?.[0] || 'No major issues'],
-      ['Deployment Reality', categories?.deploymentReality?.score || '-', getGrade(categories?.deploymentReality?.score).badge, categories?.deploymentReality?.issues?.[0] || 'Config valid'],
-      ['Repo Credibility', categories?.repoCredibility?.score || '-', 'Review', categories?.repoCredibility?.issues?.[0] || 'Docs OK'],
-      ['Developer Experience', categories?.developerExperience?.score || '-', 'Good', categories?.developerExperience?.issues?.[0] || 'Solid DX'],
-    ];
-
-    autoTable(doc, {
-      startY: 85,
-      head: [tableData[0]],
-      body: tableData.slice(1),
-      theme: 'grid',
-      headStyles: { fillColor: [79, 91, 213] },
-    });
-
-    // Top Issues
-    if (analysisData.topIssues && analysisData.topIssues.length > 0) {
-      const finalY = doc.lastAutoTable.finalY + 15;
-      doc.setFontSize(14);
-      doc.text('Top Critical Issues:', 14, finalY);
-
-      const issuesData = analysisData.topIssues.map(issue => [issue]);
-      autoTable(doc, {
-        startY: finalY + 5,
-        body: issuesData,
-        theme: 'striped',
-        bodyStyles: { textColor: [200, 0, 0] },
-      });
-    }
-
-    doc.save(`shipshield-report-${repoName.replace('/', '-')}.pdf`);
-  };
-
   return (
     <section className='min-h-screen bg-gray-50'>
       <header className='flex flex-col lg:flex-row justify-between items-start lg:items-center bg-white border-b border-[#E2E8F0] px-6 py-4 gap-4'>
@@ -187,11 +126,7 @@ const Dashboard = () => {
           >
             Re-scan
           </CustomButton>
-          <CustomButton
-            className="w-full sm:w-auto"
-            onClick={handleExport}
-            disabled={!analysisData}
-          >
+          <CustomButton className="w-full sm:w-auto">
             Export Report
           </CustomButton>
         </div>
@@ -273,75 +208,65 @@ const Dashboard = () => {
           )}
         </motion.div>
 
-        {loading && (
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-6xl'>
-            {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-48 w-full rounded-xl" />
-            ))}
-          </div>
-        )}
-
-        {data && !loading && (
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-6xl'
-          >
-            <motion.div variants={itemVariants} className="h-full">
-              <AuditMetricCard
-                title="Security Audit"
-                icon={X}
-                value={data.security.val}
-                valueLabel="Critical Issues"
-                badge={data.security.badge}
-                description={data.security.desc}
-                progress={data.security.progress}
-                theme={data.security.theme}
-              />
-            </motion.div>
-
-            <motion.div variants={itemVariants} className="h-full">
-              <AuditMetricCard
-                title="Documentation"
-                icon={FileText}
-                value={data.docs.val}
-                valueLabel="Coverage"
-                badge={data.docs.badge}
-                description={data.docs.desc}
-                progress={data.docs.progress}
-                theme={data.docs.theme}
-              />
-            </motion.div>
-
-            <motion.div variants={itemVariants} className="h-full">
-              <AuditMetricCard
-                title="CI & Testing"
-                icon={CheckCircle}
-                value={data.testing.val}
-                valueLabel="Pass Rate"
-                badge={data.testing.badge}
-                description={data.testing.desc}
-                progress={data.testing.progress}
-                theme={data.testing.theme}
-              />
-            </motion.div>
-
-            <motion.div variants={itemVariants} className="h-full">
-              <AuditMetricCard
-                title="Deployment"
-                icon={UploadCloud}
-                value={data ? data.deploy.val : '-'}
-                valueLabel="Config Score"
-                badge={data ? data.deploy.badge : ''}
-                description={data ? data.deploy.desc : ''}
-                progress={data ? data.deploy.progress : 0}
-                theme={data ? data.deploy.theme : 'gray'}
-              />
-            </motion.div>
-
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-6xl'
+        >
+          <motion.div variants={itemVariants} className="h-full">
+            <AuditMetricCard
+              title="Security Audit"
+              icon={X}
+              value={data.security.val}
+              valueLabel="Critical Issues"
+              badge={data.security.badge}
+              description={data.security.desc}
+              progress={data.security.progress}
+              theme={data.security.theme}
+            />
           </motion.div>
-        )}
+
+          <motion.div variants={itemVariants} className="h-full">
+            <AuditMetricCard
+              title="Documentation"
+              icon={FileText}
+              value={data.docs.val}
+              valueLabel="Coverage"
+              badge={data.docs.badge}
+              description={data.docs.desc}
+              progress={data.docs.progress}
+              theme={data.docs.theme}
+            />
+          </motion.div>
+
+          <motion.div variants={itemVariants} className="h-full">
+            <AuditMetricCard
+              title="CI & Testing"
+              icon={CheckCircle}
+              value={data.testing.val}
+              valueLabel="Pass Rate"
+              badge={data.testing.badge}
+              description={data.testing.desc}
+              progress={data.testing.progress}
+              theme={data.testing.theme}
+            />
+          </motion.div>
+
+          <motion.div variants={itemVariants} className="h-full">
+            <AuditMetricCard
+              title="Deployment"
+              icon={UploadCloud}
+              value={data ? data.deploy.val : '-'}
+              valueLabel="Config Score"
+              badge={data ? data.deploy.badge : ''}
+              description={data ? data.deploy.desc : ''}
+              progress={data ? data.deploy.progress : 0}
+              theme={data ? data.deploy.theme : 'gray'}
+            />
+          </motion.div>
+
+        </motion.div>
 
       </main>
 
