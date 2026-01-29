@@ -10,6 +10,10 @@ const { calculateScore } = require("./services/scoring");
 const { checkDeployment } = require("./services/deploy.service");
 const { generatePR } = require("./services/pr.service");
 
+const { saveScan, getUserScans } = require("./services/history.service");
+
+const authMiddleware = require("./middleware/authGuard");
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -33,6 +37,21 @@ const swaggerSpec = swaggerJSDoc({
     servers: [
       {
         url: `http://localhost:${PORT}`,
+      },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
+    },
+
+    security: [
+      {
+        bearerAuth: [],
       },
     ],
   },
@@ -61,6 +80,8 @@ app.get("/api/health", (req, res) => {
  *   post:
  *     summary: Analyze GitHub repo and compute Ship Score
  *     tags: [Analysis]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -78,13 +99,26 @@ app.get("/api/health", (req, res) => {
  *       200:
  *         description: Analysis result
  */
-app.post("/api/analyze", async (req, res) => {
+app.post("/api/analyze", authMiddleware, async (req, res) => {
   const { repoUrl, deploymentUrl } = req.body;
+  const userId = req.user.uid;
 
   try {
     const repoData = await getRepoData(repoUrl);
     const deploymentData = await checkDeployment(deploymentUrl);
     const result = calculateScore(repoData, deploymentData);
+
+    const scanRecord = {
+      userId,
+      repoUrl,
+      deploymentUrl,
+      score: result.score,
+      categories: result.categories,
+      topIssues: result.topIssues,
+      createdAt: new Date(),
+    };
+
+    await saveScan(scanRecord);
 
     res.json({
       score: result.score,
@@ -92,7 +126,7 @@ app.post("/api/analyze", async (req, res) => {
         deploymentReality: result.categories.deploymentReality,
         repoCredibility: result.categories.repoCredibility,
         productionSafety: result.categories.productionSafety,
-        developerExperience: result.categories.developerExperience
+        developerExperience: result.categories.developerExperience,
       },
       topIssues: result.topIssues,
       repoUrl,
@@ -101,6 +135,27 @@ app.post("/api/analyze", async (req, res) => {
     });
   } catch (error) {
     res.status(400).json({ error: error.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/history:
+ *   get:
+ *     summary: Fetch user's past scans
+ *     tags: [History]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of previous analyses
+ */
+app.get("/api/history", authMiddleware, async (req, res) => {
+  try {
+    const scans = await getUserScans(req.user.uid);
+    res.json(scans);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
