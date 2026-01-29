@@ -5,15 +5,18 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [token, setToken] = useState(localStorage.getItem('shipshield_token'));
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (token) {
-      // Validate token or set user from token
-      setUser({ uid: 'user123' }); // Mock for now
+    const storedToken = localStorage.getItem('shipshield_token');
+    const storedUid = localStorage.getItem('shipshield_uid');
+
+    if (storedToken && storedUid) {
+      setUser({ uid: storedUid, email: 'user@example.com' }); // Restore user session
+      setToken(storedToken);
     }
-  }, [token]);
+  }, []);
 
   const signIn = async (email, password) => {
     setLoading(true);
@@ -21,8 +24,9 @@ export const AuthProvider = ({ children }) => {
       const result = await api.signIn(email, password);
       if (result.token) {
         setToken(result.token);
-        setUser({ uid: result.uid });
-        localStorage.setItem('token', result.token);
+        setUser({ uid: result.uid, email });
+        localStorage.setItem('shipshield_token', result.token);
+        localStorage.setItem('shipshield_uid', result.uid);
       }
       return result;
     } catch (error) {

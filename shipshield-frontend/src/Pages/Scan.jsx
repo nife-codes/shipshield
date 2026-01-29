@@ -4,7 +4,7 @@ import CustomButton from '../components/ui/Button'
 import AnalysisSteps from '../components/ui/AnalysisSteps'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-
+import { useLocation } from 'react-router-dom'
 import { api } from '../services/api';
 
 const Scan = () => {

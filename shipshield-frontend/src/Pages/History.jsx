@@ -1,51 +1,64 @@
 import React from 'react';
 import { FileText, Calendar, Clock, Star } from 'lucide-react';
+import { Skeleton } from '../components/ui/Skeleton';
 import { motion } from 'framer-motion';
 import { containerVariants, itemVariants } from '../animations/variants';
 
+import { api } from '../services/api';
+
 const History = () => {
     const [historyData, setHistoryData] = React.useState([]);
+    const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
-        const saved = JSON.parse(localStorage.getItem('shipshield_history') || '[]');
+        const fetchHistory = async () => {
+            try {
+                // Try fetching from API
+                const data = await api.getHistory();
 
-        // Helper to map score to Grade
-        const getGrade = (score) => {
-            if (score >= 90) return 'A+'; // Adjusted threshold
-            if (score >= 80) return 'A';
-            if (score >= 70) return 'B';
-            if (score >= 50) return 'C';
-            return 'F';
+                // Helper to map score to Grade
+                const getGrade = (score) => {
+                    if (score >= 90) return 'A+';
+                    if (score >= 80) return 'A';
+                    if (score >= 70) return 'B';
+                    if (score >= 50) return 'C';
+                    return 'F';
+                };
+
+                const getColor = (grade) => {
+                    if (grade.startsWith('A')) return 'text-green-700 bg-green-200';
+                    if (grade.startsWith('B')) return 'text-blue-600 bg-blue-100';
+                    if (grade.startsWith('C')) return 'text-yellow-600 bg-yellow-100';
+                    return 'text-red-700 bg-red-200';
+                };
+
+                const formatted = data.map(item => {
+                    const grade = getGrade(item.score);
+                    // Handle timestamp: item.createdAt might be Firestore string or timestamp
+                    const date = item.createdAt && item.createdAt._seconds
+                        ? new Date(item.createdAt._seconds * 1000)
+                        : new Date(item.createdAt || Date.now());
+
+                    return {
+                        id: item.analysisId || item.id,
+                        repo: item.repoUrl ? item.repoUrl.replace('https://github.com/', '') : 'Unknown Repo',
+                        date: date.toLocaleDateString() + ' ' + date.toLocaleTimeString(),
+                        score: grade,
+                        scoreColor: getColor(grade),
+                        size: 'N/A'
+                    };
+                });
+
+                setHistoryData(formatted);
+            } catch (err) {
+                console.error("Failed to fetch history:", err);
+                // On error, we could show empty state or error message
+            } finally {
+                setLoading(false);
+            }
         };
 
-        const getColor = (grade) => {
-            if (grade.startsWith('A')) return 'text-green-700 bg-green-200';
-            if (grade.startsWith('B')) return 'text-blue-600 bg-blue-100';
-            if (grade.startsWith('C')) return 'text-yellow-600 bg-yellow-100';
-            return 'text-red-700 bg-red-200';
-        };
-
-        const formatted = saved.map(item => {
-            const grade = getGrade(item.score);
-            return {
-                id: item.id,
-                repo: item.repo.replace('https://github.com/', ''),
-                date: new Date(item.date).toLocaleDateString(),
-                score: grade,
-                scoreColor: getColor(grade),
-                size: 'N/A' // Size not currently in analysis result
-            };
-        });
-
-        if (formatted.length === 0) {
-            // Keep mock data if empty? Or just show empty. Let's show mock if empty for demo.
-            setHistoryData([
-                { id: 1, repo: 'shipshield-frontend', date: '2 mins ago', score: 'B+', scoreColor: 'text-yellow-600 bg-yellow-100', size: '2.4 MB' },
-                { id: 2, repo: 'backend-api-v2', date: 'Yesterday', score: 'A', scoreColor: 'text-green-600 bg-green-100', size: '1.8 MB' },
-            ]);
-        } else {
-            setHistoryData(formatted);
-        }
+        fetchHistory();
     }, []);
 
 
@@ -63,7 +76,16 @@ const History = () => {
                 animate="visible"
                 className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-6"
             >
-                {historyData.map((item) => (
+                {loading && [1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                    <div key={i} className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm flex flex-col items-center">
+                        <Skeleton className="w-16 h-16 rounded-xl mb-4" />
+                        <Skeleton className="h-6 w-3/4 mb-2" />
+                        <Skeleton className="h-4 w-1/2 mb-4" />
+                        <Skeleton className="h-8 w-20 rounded-full" />
+                    </div>
+                ))}
+
+                {!loading && historyData.map((item) => (
                     <motion.div
                         key={item.id}
                         variants={itemVariants}

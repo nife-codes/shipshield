@@ -20,8 +20,11 @@ const SignIn = () => {
     setError(null);
 
     try {
-      await api.signIn(email, password);
-      // Ideally store token here
+      const data = await api.signIn(email, password);
+      // Store token
+      localStorage.setItem('shipshield_token', data.token);
+      localStorage.setItem('shipshield_uid', data.uid);
+
       navigate('/dashboard');
     } catch (err) {
       setError(err.message);

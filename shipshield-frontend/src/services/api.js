@@ -1,17 +1,39 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5173';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+const getHeaders = () => {
+  const token = localStorage.getItem('shipshield_token');
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+  };
+};
 
 export const api = {
   async analyzeRepo(repoUrl, deploymentUrl) {
     const response = await fetch(`${API_BASE}/api/analyze`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getHeaders(),
       body: JSON.stringify({ repoUrl, deploymentUrl })
     });
 
     if (!response.ok) {
-      throw new Error(`Analysis failed: ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `Analysis failed: ${response.statusText}`);
     }
 
+    return response.json();
+  },
+
+  async getHistory() {
+    const response = await fetch(`${API_BASE}/api/history`, {
+      method: 'GET',
+      headers: getHeaders()
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `History fetch failed: ${response.statusText}`);
+    }
     return response.json();
   },
 

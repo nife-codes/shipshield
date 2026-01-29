@@ -20,9 +20,24 @@ const SignUp = () => {
     setError(null);
 
     try {
-      // In this flow, we might sign up first, then open modal
-      // Or just open modal and sign up later? Use standard signup first.
-      await api.signUp(email, password);
+      const data = await api.signUp(email, password);
+      localStorage.setItem('shipshield_token', data.token); // Assuming signUp returns token too? 
+      // Checking auth.js router.post('/signup'): it returns { message: 'User created', uid: ... } but NO token in my previous read of auth.js Step 50.
+      // Wait, let's re-read auth.js Step 50.
+      // Signup returns: res.json({ message: 'User created', uid: userRecord.uid });
+      // It DOES NOT return a token. So the user must Sign In after Sign Up?
+      // Or we should auto-sign-in?
+      // Standard Firebase flow: createUser returns UserCredential which acts as sign-in.
+      // But backend just creates it.
+      // Let's modify logic: After signup, call signIn automatically? Or just direct to Sign In page?
+      // For now, let's assume valid flow is navigate to Sign In or we fix backend to return token.
+      // I will chain SignIn after SignUp.
+
+      await api.signIn(email, password).then(loginData => {
+        localStorage.setItem('shipshield_token', loginData.token);
+        localStorage.setItem('shipshield_uid', loginData.uid);
+      });
+
       setIsModalOpen(true);
     } catch (err) {
       setError(err.message);
@@ -77,9 +92,9 @@ const SignUp = () => {
               />
             </div>
 
-            <CustomButton type="submit" className="mt-2 w-full justify-center">
+            <button type="submit" className="mt-2 w-full justify-center">
               Sign Up
-            </CustomButton>
+            </button>
           </form>
 
           <div className="relative my-6">

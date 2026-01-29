@@ -1,9 +1,11 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import CustomButton from '../components/ui/Button'
 import SpinningScore from '../components/score/SpinningScore'
-import AuditMetricCard from '../components/ui/AuditMetricCard'
-import RepoScanModal from '../components/Auth/RepoScanModal'
+import { Skeleton } from '../components/ui/Skeleton'
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
 
 import {
   AlertTriangle, MoveRight, X,
@@ -16,10 +18,37 @@ import { containerVariants, itemVariants } from '../animations/variants'
 
 
 
+import { api } from '../services/api';
+
 const Dashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const location = useLocation();
-  const analysisData = location.state?.analysis;
+  const [analysisData, setAnalysisData] = useState(location.state?.analysis || null);
+  const [loading, setLoading] = useState(!location.state?.analysis);
+
+  useEffect(() => {
+    if (!analysisData) {
+      const fetchLatest = async () => {
+        try {
+          const history = await api.getHistory();
+          if (history && history.length > 0) {
+            // Transform history item back to analysis format if needed
+            // The history item structure: { id, score, categories, topIssues, repoUrl... }
+            // It matches what we need for mapData generally.
+            setAnalysisData(history[0]);
+          }
+        } catch (err) {
+          console.error("Failed to fetch dashboard data", err);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchLatest();
+    } else {
+      setLoading(false);
+    }
+  }, []);
 
   // Helper to map 0-25 score to Grade/Color
   const getGrade = (score) => {
@@ -37,7 +66,8 @@ const Dashboard = () => {
         security: { val: 'C-', progress: 45, theme: 'danger', badge: 'Needs Work', desc: '3 High severity vulnerabilities detected' },
         docs: { val: '58%', progress: 58, theme: 'warning', badge: 'Improve', desc: 'README missing setup instructions' },
         testing: { val: '92%', progress: 92, theme: 'success', badge: 'Good', desc: 'All unit tests passed' },
-        deploy: { val: 'A', progress: 85, theme: 'info', badge: 'Stable', desc: 'Dockerfiles optimized' }
+        deploy: { val: 'A', progress: 85, theme: 'info', badge: 'Stable', desc: 'Dockerfiles optimized' },
+        topIssues: ['High severity vulnerability in package.json', 'Missing .env.example file']
       };
     }
 
@@ -74,11 +104,72 @@ const Dashboard = () => {
         theme: dep.theme,
         badge: dep.badge,
         desc: categories.deploymentReality.issues[0] || 'Deployment config valid.'
-      }
+      },
+      topIssues: analysisData.topIssues || []
     };
   };
 
   const data = mapData();
+
+  const handleExport = () => {
+    if (!analysisData) return;
+
+    const doc = new jsPDF();
+    const repoName = analysisData.repoUrl?.replace('https://github.com/', '') || 'Repository';
+
+    // Header
+    doc.setFontSize(20);
+    doc.text('ShipShield Readiness Audit', 14, 22);
+
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text(`Repo: ${analysisData.repoUrl}`, 14, 32);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 38);
+
+    // Score
+    doc.setFillColor(240, 240, 240);
+    doc.rect(14, 45, 182, 30, 'F');
+    doc.setFontSize(16);
+    doc.setTextColor(0);
+    doc.text(`Overall Score: ${analysisData.score}/100`, 20, 60);
+    doc.setFontSize(12);
+    doc.text(analysisData.score < 80 ? 'Status: Not Production Ready' : 'Status: Production Ready', 20, 70);
+
+    // Metrics Table
+    const { categories } = analysisData;
+    const tableData = [
+      ['Category', 'Score', 'Status', 'Key Findings'],
+      ['Production Safety', categories?.productionSafety?.score || '-', getGrade(categories?.productionSafety?.score).badge, categories?.productionSafety?.issues?.[0] || 'No major issues'],
+      ['Deployment Reality', categories?.deploymentReality?.score || '-', getGrade(categories?.deploymentReality?.score).badge, categories?.deploymentReality?.issues?.[0] || 'Config valid'],
+      ['Repo Credibility', categories?.repoCredibility?.score || '-', 'Review', categories?.repoCredibility?.issues?.[0] || 'Docs OK'],
+      ['Developer Experience', categories?.developerExperience?.score || '-', 'Good', categories?.developerExperience?.issues?.[0] || 'Solid DX'],
+    ];
+
+    autoTable(doc, {
+      startY: 85,
+      head: [tableData[0]],
+      body: tableData.slice(1),
+      theme: 'grid',
+      headStyles: { fillColor: [79, 91, 213] },
+    });
+
+    // Top Issues
+    if (analysisData.topIssues && analysisData.topIssues.length > 0) {
+      const finalY = doc.lastAutoTable.finalY + 15;
+      doc.setFontSize(14);
+      doc.text('Top Critical Issues:', 14, finalY);
+
+      const issuesData = analysisData.topIssues.map(issue => [issue]);
+      autoTable(doc, {
+        startY: finalY + 5,
+        body: issuesData,
+        theme: 'striped',
+        bodyStyles: { textColor: [200, 0, 0] },
+      });
+    }
+
+    doc.save(`shipshield-report-${repoName.replace('/', '-')}.pdf`);
+  };
 
   return (
     <section className='min-h-screen bg-gray-50'>
@@ -96,7 +187,11 @@ const Dashboard = () => {
           >
             Re-scan
           </CustomButton>
-          <CustomButton className="w-full sm:w-auto">
+          <CustomButton
+            className="w-full sm:w-auto"
+            onClick={handleExport}
+            disabled={!analysisData}
+          >
             Export Report
           </CustomButton>
         </div>
@@ -111,92 +206,142 @@ const Dashboard = () => {
           transition={{ duration: 0.5 }}
           className="flex flex-col lg:flex-row bg-gradient-to-b from-white to-[#4f5ad51a] border border-white rounded-xl p-8 gap-10 items-center w-full max-w-6xl shadow-sm"
         >
-          {/* Card */}
-          <div className="max-w-lg flex bg-white p-7 rounded-lg flex-col gap-4 w-full">
-            <p className="font-bold text-2xl text-black">Overall Ship Score</p>
-            <p className="font-medium mt-2 text-[#64748B] text-base">
-              Based on AI analysis of your codebase security, documentation coverage, test reliability, and deployment configurations.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 mt-4 items-start sm:items-center">
-              <div className="bg-[#FDE68A] flex items-center gap-2 rounded-lg font-bold py-2 px-4 text-[#B45309]">
-                <AlertTriangle size={20} /> {data.score < 80 ? 'not production ready' : 'Production Ready'}
+          {loading ? (
+            <div className="w-full flex flex-col gap-8">
+              <div className="flex flex-col lg:flex-row gap-8 w-full">
+                <div className="flex-1 space-y-4">
+                  <Skeleton className="h-8 w-1/3" />
+                  <Skeleton className="h-4 w-2/3" />
+                  <div className="flex gap-4 mt-6">
+                    <Skeleton className="h-10 w-32" />
+                    <Skeleton className="h-6 w-24" />
+                  </div>
+                  <Skeleton className="h-6 w-40 mt-6" />
+                </div>
+                <div className="flex-1 flex justify-center">
+                  <Skeleton className="rounded-full h-64 w-64" />
+                </div>
               </div>
-              <p className="text-[#64748B] text-sm mt-1 sm:mt-0">last scanned just now</p>
             </div>
+          ) : !data ? (
+            <div className="w-full h-64 flex justify-center items-center">
+              <p className="text-gray-500">No scan data available. Start a new scan.</p>
+            </div>
+          ) : (
+            <>
+              {/* Card */}
+              <div className="max-w-lg flex bg-white p-7 rounded-lg flex-col gap-4 w-full">
+                <p className="font-bold text-2xl text-black">Overall Ship Score</p>
+                <p className="font-medium mt-2 text-[#64748B] text-base">
+                  Based on AI analysis of your codebase security, documentation coverage, test reliability, and deployment configurations.
+                </p>
 
-            <NavLink to="/issues" className="mt-6 inline-block group">
-              <p className="text-[#4F5BD5] text-base flex gap-2 items-center cursor-pointer font-medium group-hover:underline">
-                View Detailed Breakdown <MoveRight className="transition-transform group-hover:translate-x-1" />
-              </p>
-            </NavLink>
-          </div>
+                <div className="flex flex-col sm:flex-row gap-4 mt-4 items-start sm:items-center">
+                  <div className="bg-[#FDE68A] flex items-center gap-2 rounded-lg font-bold py-2 px-4 text-[#B45309]">
+                    <AlertTriangle size={20} /> {data.score < 80 ? 'not production ready' : 'Production Ready'}
+                  </div>
+                  <p className="text-[#64748B] text-sm mt-1 sm:mt-0">last scanned just now</p>
+                </div>
 
-          {/* Spinning Score */}
-          <div className="flex-1 flex justify-center">
-            <SpinningScore score={data.score} size={250} />
-          </div>
+                {/* Top Issues Section */}
+                {data.topIssues && data.topIssues.length > 0 && (
+                  <div className="mt-4">
+                    <p className="text-sm font-semibold text-gray-700 mb-2">Top Issues:</p>
+                    <ul className="space-y-2">
+                      {data.topIssues.slice(0, 2).map((issue, idx) => (
+                        <li key={idx} className="flex items-start gap-2 text-sm text-red-600 bg-red-50 p-2 rounded">
+                          <AlertTriangle size={14} className="mt-1 flex-shrink-0" />
+                          <span>{issue}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <NavLink to="/issues" className="mt-6 inline-block group">
+                  <p className="text-[#4F5BD5] text-base flex gap-2 items-center cursor-pointer font-medium group-hover:underline">
+                    View Detailed Breakdown <MoveRight className="transition-transform group-hover:translate-x-1" />
+                  </p>
+                </NavLink>
+              </div>
+
+              {/* Spinning Score */}
+              <div className="flex-1 flex justify-center">
+                <SpinningScore score={data.score} size={250} />
+              </div>
+            </>
+          )}
         </motion.div>
 
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-6xl'
-        >
-          <motion.div variants={itemVariants} className="h-full">
-            <AuditMetricCard
-              title="Security Audit"
-              icon={X}
-              value={data.security.val}
-              valueLabel="Critical Issues"
-              badge={data.security.badge}
-              description={data.security.desc}
-              progress={data.security.progress}
-              theme={data.security.theme}
-            />
-          </motion.div>
+        {loading && (
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-6xl'>
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-48 w-full rounded-xl" />
+            ))}
+          </div>
+        )}
 
-          <motion.div variants={itemVariants} className="h-full">
-            <AuditMetricCard
-              title="Documentation"
-              icon={FileText}
-              value={data.docs.val}
-              valueLabel="Coverage"
-              badge={data.docs.badge}
-              description={data.docs.desc}
-              progress={data.docs.progress}
-              theme={data.docs.theme}
-            />
-          </motion.div>
+        {data && !loading && (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-6xl'
+          >
+            <motion.div variants={itemVariants} className="h-full">
+              <AuditMetricCard
+                title="Security Audit"
+                icon={X}
+                value={data.security.val}
+                valueLabel="Critical Issues"
+                badge={data.security.badge}
+                description={data.security.desc}
+                progress={data.security.progress}
+                theme={data.security.theme}
+              />
+            </motion.div>
 
-          <motion.div variants={itemVariants} className="h-full">
-            <AuditMetricCard
-              title="CI & Testing"
-              icon={CheckCircle}
-              value={data.testing.val}
-              valueLabel="Pass Rate"
-              badge={data.testing.badge}
-              description={data.testing.desc}
-              progress={data.testing.progress}
-              theme={data.testing.theme}
-            />
-          </motion.div>
+            <motion.div variants={itemVariants} className="h-full">
+              <AuditMetricCard
+                title="Documentation"
+                icon={FileText}
+                value={data.docs.val}
+                valueLabel="Coverage"
+                badge={data.docs.badge}
+                description={data.docs.desc}
+                progress={data.docs.progress}
+                theme={data.docs.theme}
+              />
+            </motion.div>
 
-          <motion.div variants={itemVariants} className="h-full">
-            <AuditMetricCard
-              title="Deployment"
-              icon={UploadCloud}
-              value={data.deploy.val}
-              valueLabel="Config Score"
-              badge={data.deploy.badge}
-              description={data.deploy.desc}
-              progress={data.deploy.progress}
-              theme={data.deploy.theme}
-            />
-          </motion.div>
+            <motion.div variants={itemVariants} className="h-full">
+              <AuditMetricCard
+                title="CI & Testing"
+                icon={CheckCircle}
+                value={data.testing.val}
+                valueLabel="Pass Rate"
+                badge={data.testing.badge}
+                description={data.testing.desc}
+                progress={data.testing.progress}
+                theme={data.testing.theme}
+              />
+            </motion.div>
 
-        </motion.div>
+            <motion.div variants={itemVariants} className="h-full">
+              <AuditMetricCard
+                title="Deployment"
+                icon={UploadCloud}
+                value={data ? data.deploy.val : '-'}
+                valueLabel="Config Score"
+                badge={data ? data.deploy.badge : ''}
+                description={data ? data.deploy.desc : ''}
+                progress={data ? data.deploy.progress : 0}
+                theme={data ? data.deploy.theme : 'gray'}
+              />
+            </motion.div>
+
+          </motion.div>
+        )}
 
       </main>
 
