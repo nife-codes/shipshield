@@ -172,7 +172,7 @@ Environment variables required:
 
 ## Team
 
-- Nife: Backend lead, scoring engine, GitHub API
+- Nife: Scoring engine, GitHub API
 - Israel: Deployment checks, PR generation, database
 
 ## License
