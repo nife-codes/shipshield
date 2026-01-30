@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import CustomButton from '../components/ui/Button'
 import SpinningScore from '../components/score/SpinningScore'
@@ -8,13 +8,14 @@ import { Skeleton } from '../components/ui/Skeleton'
 import Confetti from 'react-confetti'
 import { useWindowSize } from 'react-use'
 import { mapAnalysisData } from '../lib/utils'
+import { exportAsJSON, exportAsCSV, exportAsHTML, exportAsText } from '../lib/export'
 
 import {
   AlertTriangle, MoveRight, X,
-  FileText,
+  Shield,TestTube, Rocket, Download, ChevronDown, FileText,
   CheckCircle,
   UploadCloud,
-} from 'lucide-react'
+} from 'lucide-react';
 import { motion } from 'framer-motion'
 import { containerVariants, itemVariants } from '../animations/variants'
 
@@ -29,6 +30,8 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(!location.state?.analysis);
   const [showConfetti, setShowConfetti] = useState(false);
   const { width, height } = useWindowSize();
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const exportRef = useRef(null);
 
   useEffect(() => {
     if (!analysisData) {
@@ -60,6 +63,41 @@ const Dashboard = () => {
     }
   }, [analysisData]);
 
+  // Close export menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (exportRef.current && !exportRef.current.contains(event.target)) {
+        setShowExportMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleExport = (format) => {
+    const repoName = analysisData?.repoUrl?.split('/').pop() || 'shipshield_report';
+
+    switch (format) {
+      case 'json':
+        exportAsJSON(analysisData, repoName);
+        break;
+      case 'csv':
+        exportAsCSV(analysisData, repoName);
+        break;
+      case 'html':
+        exportAsHTML(analysisData, repoName);
+        break;
+      case 'text':
+        exportAsText(analysisData, repoName);
+        break;
+      default:
+        break;
+    }
+
+    setShowExportMenu(false);
+  };
+
   const data = mapAnalysisData(analysisData);
 
   return (
@@ -76,22 +114,60 @@ const Dashboard = () => {
       <header className='flex flex-col lg:flex-row justify-between items-start lg:items-center bg-white border-b border-[#E2E8F0] px-6 py-4 gap-4'>
         <div>
           <p className='text-sm text-[#475569] font-medium'>{analysisData?.repoUrl || 'Repo name'}</p>
-          <h1 className='text-3xl font-bold text-black mt-1'>Readiness Audit</h1>
+          <h1 className='text-3xl font-bold text-gray-900 mt-1'>Analysis Dashboard</h1>
         </div>
+        <div className='flex gap-3'>
+          {/* Export Dropdown */}
+          {analysisData && (
+            <div className='relative' ref={exportRef}>
+              <button
+                onClick={() => setShowExportMenu(!showExportMenu)}
+                className='flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium text-gray-700'
+              >
+                <Download size={18} />
+                Export Report
+                <ChevronDown size={16} />
+              </button>
 
-        <div className='flex flex-wrap gap-3 w-full lg:w-auto'>
-          <CustomButton
-            variant="outline"
-            className="w-full sm:w-auto"
-            onClick={() => setIsModalOpen(true)}
-          >
-            Re-scan
-          </CustomButton>
-          <CustomButton className="w-full sm:w-auto">
-            Export Report
+              {showExportMenu && (
+                <div className='absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10'>
+                  <button
+                    onClick={() => handleExport('json')}
+                    className='w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center gap-2 text-gray-700 first:rounded-t-lg'
+                  >
+                    <Download size={16} />
+                    JSON Format
+                  </button>
+                  <button
+                    onClick={() => handleExport('csv')}
+                    className='w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center gap-2 text-gray-700 border-t border-gray-100'
+                  >
+                    <Download size={16} />
+                    CSV Format
+                  </button>
+                  <button
+                    onClick={() => handleExport('html')}
+                    className='w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center gap-2 text-gray-700 border-t border-gray-100'
+                  >
+                    <Download size={16} />
+                    HTML Report
+                  </button>
+                  <button
+                    onClick={() => handleExport('text')}
+                    className='w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center gap-2 text-gray-700 border-t border-gray-100 last:rounded-b-lg'
+                  >
+                    <Download size={16} />
+                    Text File
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          <CustomButton onClick={() => setIsModalOpen(true)} color="primary" variant="solid">
+            New Scan
           </CustomButton>
         </div>
-
       </header>
 
 
@@ -251,7 +327,7 @@ const Dashboard = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
-    </section>
+    </section >
   )
 }
 
