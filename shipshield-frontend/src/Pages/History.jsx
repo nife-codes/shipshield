@@ -15,6 +15,7 @@ const History = () => {
             try {
                 // Try fetching from API
                 const data = await api.getHistory();
+                console.log('Raw history data from API:', data);
 
                 // Helper to map score to Grade
                 const getGrade = (score) => {
@@ -49,7 +50,15 @@ const History = () => {
                     };
                 });
 
-                setHistoryData(formatted);
+                console.log('Formatted history data:', formatted);
+
+                // Deduplicate based on id (which uses analysisId if available)
+                const uniqueScans = Array.from(
+                    new Map(formatted.map(scan => [scan.id, scan])).values()
+                );
+
+                console.log('Unique scans after deduplication:', uniqueScans);
+                setHistoryData(uniqueScans);
             } catch (err) {
                 console.error("Failed to fetch history:", err);
                 // On error, we could show empty state or error message
@@ -85,10 +94,13 @@ const History = () => {
                     </div>
                 ))}
 
-                {!loading && historyData.map((item) => (
+                {!loading && historyData.map((item, index) => (
                     <motion.div
                         key={item.id}
                         variants={itemVariants}
+                        initial="hidden"
+                        animate="visible"
+                        transition={{ delay: index * 0.1 }}
                         whileHover={{ scale: 1.02, translateY: -5 }}
                         className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all cursor-pointer group flex flex-col items-center text-center relative overflow-hidden"
                     >

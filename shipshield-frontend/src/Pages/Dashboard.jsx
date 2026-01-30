@@ -5,6 +5,8 @@ import SpinningScore from '../components/score/SpinningScore'
 import AuditMetricCard from '../components/ui/AuditMetricCard'
 import RepoScanModal from '../components/Auth/RepoScanModal'
 import { Skeleton } from '../components/ui/Skeleton'
+import Confetti from 'react-confetti'
+import { useWindowSize } from 'react-use'
 
 import {
   AlertTriangle, MoveRight, X,
@@ -24,6 +26,8 @@ const Dashboard = () => {
   const location = useLocation();
   const [analysisData, setAnalysisData] = useState(location.state?.analysis || null);
   const [loading, setLoading] = useState(!location.state?.analysis);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const { width, height } = useWindowSize();
 
   useEffect(() => {
     if (!analysisData) {
@@ -31,9 +35,6 @@ const Dashboard = () => {
         try {
           const history = await api.getHistory();
           if (history && history.length > 0) {
-            // Transform history item back to analysis format if needed
-            // The history item structure: { id, score, categories, topIssues, repoUrl... }
-            // It matches what we need for mapData generally.
             setAnalysisData(history[0]);
           }
         } catch (err) {
@@ -48,6 +49,15 @@ const Dashboard = () => {
       setLoading(false);
     }
   }, []);
+
+  // Trigger confetti for high scores
+  useEffect(() => {
+    if (analysisData && analysisData.score >= 80) {
+      setShowConfetti(true);
+      const timer = setTimeout(() => setShowConfetti(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [analysisData]);
 
   // Helper to map 0-25 score to Grade/Color
   const getGrade = (score) => {
@@ -112,6 +122,15 @@ const Dashboard = () => {
 
   return (
     <section className='min-h-screen bg-gray-50'>
+      {showConfetti && (
+        <Confetti
+          width={width}
+          height={height}
+          recycle={false}
+          numberOfPieces={500}
+          gravity={0.3}
+        />
+      )}
       <header className='flex flex-col lg:flex-row justify-between items-start lg:items-center bg-white border-b border-[#E2E8F0] px-6 py-4 gap-4'>
         <div>
           <p className='text-sm text-[#475569] font-medium'>{analysisData?.repoUrl || 'Repo name'}</p>
@@ -172,9 +191,15 @@ const Dashboard = () => {
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 mt-4 items-start sm:items-center">
-                  <div className="bg-[#FDE68A] flex items-center gap-2 rounded-lg font-bold py-2 px-4 text-[#B45309]">
-                    <AlertTriangle size={20} /> {data.score < 80 ? 'not production ready' : 'Production Ready'}
-                  </div>
+                  {data.score >= 80 ? (
+                    <div className="bg-gradient-to-r from-green-500 to-emerald-500 flex items-center gap-2 rounded-lg font-bold py-2.5 px-5 text-white shadow-lg">
+                      🎉 Production Ready!
+                    </div>
+                  ) : (
+                    <div className="bg-[#FDE68A] flex items-center gap-2 rounded-lg font-bold py-2 px-4 text-[#B45309]">
+                      <AlertTriangle size={20} /> Not Production Ready
+                    </div>
+                  )}
                   <p className="text-[#64748B] text-sm mt-1 sm:mt-0">last scanned just now</p>
                 </div>
 
@@ -208,65 +233,75 @@ const Dashboard = () => {
           )}
         </motion.div>
 
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-6xl'
-        >
-          <motion.div variants={itemVariants} className="h-full">
-            <AuditMetricCard
-              title="Security Audit"
-              icon={X}
-              value={data.security.val}
-              valueLabel="Critical Issues"
-              badge={data.security.badge}
-              description={data.security.desc}
-              progress={data.security.progress}
-              theme={data.security.theme}
-            />
-          </motion.div>
+        {loading && (
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-6xl'>
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-48 w-full rounded-xl" />
+            ))}
+          </div>
+        )}
 
-          <motion.div variants={itemVariants} className="h-full">
-            <AuditMetricCard
-              title="Documentation"
-              icon={FileText}
-              value={data.docs.val}
-              valueLabel="Coverage"
-              badge={data.docs.badge}
-              description={data.docs.desc}
-              progress={data.docs.progress}
-              theme={data.docs.theme}
-            />
-          </motion.div>
+        {data && !loading && (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-6xl'
+          >
+            <motion.div variants={itemVariants} className="h-full">
+              <AuditMetricCard
+                title="Security Audit"
+                icon={X}
+                value={data.security.val}
+                valueLabel="Critical Issues"
+                badge={data.security.badge}
+                description={data.security.desc}
+                progress={data.security.progress}
+                theme={data.security.theme}
+              />
+            </motion.div>
 
-          <motion.div variants={itemVariants} className="h-full">
-            <AuditMetricCard
-              title="CI & Testing"
-              icon={CheckCircle}
-              value={data.testing.val}
-              valueLabel="Pass Rate"
-              badge={data.testing.badge}
-              description={data.testing.desc}
-              progress={data.testing.progress}
-              theme={data.testing.theme}
-            />
-          </motion.div>
+            <motion.div variants={itemVariants} className="h-full">
+              <AuditMetricCard
+                title="Documentation"
+                icon={FileText}
+                value={data.docs.val}
+                valueLabel="Coverage"
+                badge={data.docs.badge}
+                description={data.docs.desc}
+                progress={data.docs.progress}
+                theme={data.docs.theme}
+              />
+            </motion.div>
 
-          <motion.div variants={itemVariants} className="h-full">
-            <AuditMetricCard
-              title="Deployment"
-              icon={UploadCloud}
-              value={data ? data.deploy.val : '-'}
-              valueLabel="Config Score"
-              badge={data ? data.deploy.badge : ''}
-              description={data ? data.deploy.desc : ''}
-              progress={data ? data.deploy.progress : 0}
-              theme={data ? data.deploy.theme : 'gray'}
-            />
-          </motion.div>
+            <motion.div variants={itemVariants} className="h-full">
+              <AuditMetricCard
+                title="CI & Testing"
+                icon={CheckCircle}
+                value={data.testing.val}
+                valueLabel="Pass Rate"
+                badge={data.testing.badge}
+                description={data.testing.desc}
+                progress={data.testing.progress}
+                theme={data.testing.theme}
+              />
+            </motion.div>
 
-        </motion.div>
+            <motion.div variants={itemVariants} className="h-full">
+              <AuditMetricCard
+                title="Deployment"
+                icon={UploadCloud}
+                value={data ? data.deploy.val : '-'}
+                valueLabel="Config Score"
+                badge={data ? data.deploy.badge : ''}
+                description={data ? data.deploy.desc : ''}
+                progress={data ? data.deploy.progress : 0}
+                theme={data ? data.deploy.theme : 'gray'}
+              />
+            </motion.div>
+
+          </motion.div>
+        )}
 
       </main>
 

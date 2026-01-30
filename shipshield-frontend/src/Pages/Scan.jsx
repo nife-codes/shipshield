@@ -43,10 +43,11 @@ const Scan = () => {
       }
     };
 
-    if (repoUrl) {
+    if (repoUrl && !analysisResult && !error) {
       startAnalysis();
     }
-  }, [repoUrl, location.state]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (analysisResult && currentStepIndex >= steps.length) {
@@ -95,7 +96,7 @@ const Scan = () => {
             {error}
           </p>
           <div className='mt-6'>
-            <CustomButton onClick={() => navigate('/')}>
+            <CustomButton onClick={() => navigate('/dashboard')}>
               Try Another Repository
             </CustomButton>
           </div>
@@ -123,7 +124,7 @@ const Scan = () => {
           animate={{ scale: 1 }}
           transition={{ type: "spring", bounce: 0.3, delay: 0.2 }}
         >
-          <SpinningScore score={analysisResult?.score || 56} size={150} />
+          <SpinningScore score={analysisResult?.score || 0} size={150} />
         </motion.div>
 
         <div className="w-full mt-6">
