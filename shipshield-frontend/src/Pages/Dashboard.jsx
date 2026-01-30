@@ -7,6 +7,7 @@ import RepoScanModal from '../components/Auth/RepoScanModal'
 import { Skeleton } from '../components/ui/Skeleton'
 import Confetti from 'react-confetti'
 import { useWindowSize } from 'react-use'
+import { mapAnalysisData } from '../lib/utils'
 
 import {
   AlertTriangle, MoveRight, X,
@@ -59,66 +60,7 @@ const Dashboard = () => {
     }
   }, [analysisData]);
 
-  // Helper to map 0-25 score to Grade/Color
-  const getGrade = (score) => {
-    if (score >= 22) return { grade: 'A', theme: 'success', badge: 'Excellent' };
-    if (score >= 18) return { grade: 'B', theme: 'info', badge: 'Good' };
-    if (score >= 14) return { grade: 'C', theme: 'warning', badge: 'Improve' };
-    return { grade: 'D', theme: 'danger', badge: 'Critical' };
-  };
-
-  const mapData = () => {
-    if (!analysisData) {
-      // Default/Placeholder data
-      return {
-        score: 56,
-        security: { val: 'C-', progress: 45, theme: 'danger', badge: 'Needs Work', desc: '3 High severity vulnerabilities detected' },
-        docs: { val: '58%', progress: 58, theme: 'warning', badge: 'Improve', desc: 'README missing setup instructions' },
-        testing: { val: '92%', progress: 92, theme: 'success', badge: 'Good', desc: 'All unit tests passed' },
-        deploy: { val: 'A', progress: 85, theme: 'info', badge: 'Stable', desc: 'Dockerfiles optimized' },
-        topIssues: ['High severity vulnerability in package.json', 'Missing .env.example file']
-      };
-    }
-
-    const { categories, score } = analysisData;
-    const sec = getGrade(categories.productionSafety.score);
-    const dep = getGrade(categories.deploymentReality.score);
-
-    return {
-      score: score,
-      security: {
-        val: sec.grade,
-        progress: (categories.productionSafety.score / 25) * 100,
-        theme: sec.theme,
-        badge: sec.badge,
-        desc: categories.productionSafety.issues[0] || 'No major issues found.'
-      },
-      docs: {
-        val: `${Math.round((categories.repoCredibility.score / 25) * 100)}%`,
-        progress: (categories.repoCredibility.score / 25) * 100,
-        theme: 'warning',
-        badge: 'Review',
-        desc: categories.repoCredibility.issues[0] || 'Documentation looks good.'
-      },
-      testing: {
-        val: `${Math.round((categories.developerExperience.score / 25) * 100)}%`,
-        progress: (categories.developerExperience.score / 25) * 100,
-        theme: 'success',
-        badge: 'Good',
-        desc: categories.developerExperience.issues[0] || 'Dev experience is solid.'
-      },
-      deploy: {
-        val: dep.grade,
-        progress: (categories.deploymentReality.score / 25) * 100,
-        theme: dep.theme,
-        badge: dep.badge,
-        desc: categories.deploymentReality.issues[0] || 'Deployment config valid.'
-      },
-      topIssues: analysisData.topIssues || []
-    };
-  };
-
-  const data = mapData();
+  const data = mapAnalysisData(analysisData);
 
   return (
     <section className='min-h-screen bg-gray-50'>

@@ -3,7 +3,7 @@ import { FileText, Calendar, Clock, Star } from 'lucide-react';
 import { Skeleton } from '../components/ui/Skeleton';
 import { motion } from 'framer-motion';
 import { containerVariants, itemVariants } from '../animations/variants';
-
+import { formatHistoryData } from '../lib/history';
 import { api } from '../services/api';
 
 const History = () => {
@@ -13,55 +13,11 @@ const History = () => {
     React.useEffect(() => {
         const fetchHistory = async () => {
             try {
-                // Try fetching from API
                 const data = await api.getHistory();
-                console.log('Raw history data from API:', data);
-
-                // Helper to map score to Grade
-                const getGrade = (score) => {
-                    if (score >= 90) return 'A+';
-                    if (score >= 80) return 'A';
-                    if (score >= 70) return 'B';
-                    if (score >= 50) return 'C';
-                    return 'F';
-                };
-
-                const getColor = (grade) => {
-                    if (grade.startsWith('A')) return 'text-green-700 bg-green-200';
-                    if (grade.startsWith('B')) return 'text-blue-600 bg-blue-100';
-                    if (grade.startsWith('C')) return 'text-yellow-600 bg-yellow-100';
-                    return 'text-red-700 bg-red-200';
-                };
-
-                const formatted = data.map(item => {
-                    const grade = getGrade(item.score);
-                    // Handle timestamp: item.createdAt might be Firestore string or timestamp
-                    const date = item.createdAt && item.createdAt._seconds
-                        ? new Date(item.createdAt._seconds * 1000)
-                        : new Date(item.createdAt || Date.now());
-
-                    return {
-                        id: item.analysisId || item.id,
-                        repo: item.repoUrl ? item.repoUrl.replace('https://github.com/', '') : 'Unknown Repo',
-                        date: date.toLocaleDateString() + ' ' + date.toLocaleTimeString(),
-                        score: grade,
-                        scoreColor: getColor(grade),
-                        size: 'N/A'
-                    };
-                });
-
-                console.log('Formatted history data:', formatted);
-
-                // Deduplicate based on id (which uses analysisId if available)
-                const uniqueScans = Array.from(
-                    new Map(formatted.map(scan => [scan.id, scan])).values()
-                );
-
-                console.log('Unique scans after deduplication:', uniqueScans);
-                setHistoryData(uniqueScans);
+                const formattedData = formatHistoryData(data);
+                setHistoryData(formattedData);
             } catch (err) {
                 console.error("Failed to fetch history:", err);
-                // On error, we could show empty state or error message
             } finally {
                 setLoading(false);
             }
