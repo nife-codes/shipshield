@@ -2,6 +2,8 @@
 
 Backend API for ShipShield - analyzes GitHub repositories for production readiness and generates fix PRs.
 
+Live backend: https://shipshield-seven.vercel.app
+
 ## Prerequisites
 
 - Node.js 18+ 
