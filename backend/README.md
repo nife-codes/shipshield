@@ -2,7 +2,7 @@
 
 Backend API for ShipShield - analyzes GitHub repositories for production readiness and generates fix PRs.
 
-**[Backend](https://shipshield-seven.vercel.app/)**
+**[LIVE BACKEND](https://shipshield-seven.vercel.app/)**
 
 ## Prerequisites
 
