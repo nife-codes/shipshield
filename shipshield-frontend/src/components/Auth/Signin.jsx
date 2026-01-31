@@ -11,6 +11,7 @@ const SignIn = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -32,6 +33,25 @@ const SignIn = () => {
       setLoading(false);
     }
   };
+
+  
+    const handleDemoUser = async () => {
+      try {
+        const data = await api.signUp("demo@shipshield.com", "password");
+        localStorage.setItem('shipshield_token', data.token); 
+  
+        await api.signIn("demo@shipshield.com", "password").then(loginData => {
+          localStorage.setItem('shipshield_token', loginData.token);
+          localStorage.setItem('shipshield_uid', loginData.uid);
+        });
+  
+        setIsModalOpen(true);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -87,6 +107,22 @@ const SignIn = () => {
             </CustomButton>
           </form>
 
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500">Or continue with</span>
+            </div>
+          </div>
+
+          <button
+            onClick={handleDemoUser}
+            className="w-full p-3 border border-gray-200 rounded-lg mb-4 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+          >
+            Continue as Demo User
+          </button>
+
           <p className="mt-6 text-center text-sm text-gray-500">
             Don't have an account?{' '}
             <Link to="/SignUp" className="text-[#4F5BD5] font-medium hover:underline">
@@ -95,6 +131,11 @@ const SignIn = () => {
           </p>
         </div>
       </div>
+
+      <RepoScanModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 };
