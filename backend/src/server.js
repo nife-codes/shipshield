@@ -188,15 +188,13 @@ app.get("/api/history", authMiddleware, async (req, res) => {
  *         description: PR created successfully
  */
 app.post("/api/pr", async (req, res) => {
-  const { repoUrl, filesToAdd } = req.body;
+  let { repoUrl, filesToAdd } = req.body;
 
-  if (!filesToAdd || !Array.isArray(filesToAdd) || !filesToAdd.length) {
-    filesToAdd = [
-      {
-        path: ".env.example",
-        content: "PORT=3000\nGITHUB_TOKEN=YOUR_TOKEN_HERE",
-      },
-    ];
+  // Only use default if absolutely no files provided
+  if (!filesToAdd || !Array.isArray(filesToAdd) || filesToAdd.length === 0) {
+    return res.status(400).json({
+      error: "No files to add. Please select at least one fix to include in the PR."
+    });
   }
 
   if (!repoUrl) {

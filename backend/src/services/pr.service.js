@@ -19,7 +19,11 @@ async function generatePR(repoUrl, filesToAdd = []) {
   if (!match) throw new Error("Invalid GitHub URL");
   const owner = match[1];
   const repo = match[2].replace('.git', '');
-  const baseBranch = 'main';
+
+  // Fetch repo info to get the correct default branch
+  const repoData = await getRepoData(repoUrl);
+  const baseBranch = repoData.defaultBranch || 'main';
+
   const newBranch = `shipshield/fixes-${Date.now()}`;
 
   try {

@@ -12,9 +12,9 @@ async function getOctokit() {
 
 async function getRepoData(repoUrl) {
   const client = await getOctokit();
-  
+
   const match = repoUrl.match(/github\.com\/([^\/]+)\/([^\/]+)/);
-  
+
   if (!match) {
     throw new Error('Invalid GitHub URL');
   }
@@ -41,7 +41,8 @@ async function getRepoData(repoUrl) {
       commits: commits.data,
       contributors: contributors.data,
       readme: readme ? Buffer.from(readme.data.content, 'base64').toString() : null,
-      files: files
+      files: files,
+      defaultBranch: repoInfo.data.default_branch
     };
   } catch (error) {
     throw new Error(`Failed to fetch repo: ${error.message}`);

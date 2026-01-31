@@ -12,8 +12,8 @@ import { AlertTriangle, MoveRight, X, FileText, CheckCircle, UploadCloud, Downlo
 import { motion } from 'framer-motion'
 import { containerVariants, itemVariants } from '../animations/variants'
 
-import { mapAnalysisData } from '../lib/scoring' // Helper to format backend data
-import { api } from '../services/api' // API helper to fetch repo data
+import { mapAnalysisData } from '../lib/scoring' 
+import { api } from '../services/api' 
 
 const Dashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
