@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../layout/Navbar';
 import logo from '../../assets/logo.png'
 import CustomButton from '../ui/Button';
-
+import RepoScanModal from './RepoScanModal';
 
 import { api } from '../../services/api';
 

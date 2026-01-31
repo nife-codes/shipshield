@@ -24,6 +24,11 @@ export const api = {
     return response.json();
   },
 
+  async getLatestRepo() {
+    const history = await this.getHistory();
+    return history && history.length > 0 ? history[0] : null;
+  },
+
   async getHistory() {
     const response = await fetch(`${API_BASE}/api/history`, {
       method: 'GET',

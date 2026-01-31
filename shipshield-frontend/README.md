@@ -1,83 +1,95 @@
 # ShipShield Frontend
 
-A React application built with Vite for ShipShield, featuring routing and various UI components.
+A modern, high-performance React application built for ShipShield, leveraging Vite, Tailwind CSS v4, and React 19. This dashboard provides users with real-time insights, scanning capabilities, and issue management for their repositories.
 
-## Project Structure
+## 🚀 Tech Stack
+
+- **Core**: [React 19](https://react.dev/)
+- **Build Tool**: [Vite](https://vitejs.dev/)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/) (using `@tailwindcss/vite` plugin)
+- **Routing**: [React Router v7](https://reactrouter.com/)
+- **State Management**: React Context (`AuthContext`)
+- **Visualizations**: [Recharts](https://recharts.org/)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **PDF Generation**: `jspdf` & `jspdf-autotable`
+
+## 📂 Project Structure
 
 ```
 shipshield-frontend/
-├── .gitignore
-├── eslint.config.js
-├── index.html
-├── package-lock.json
-├── package.json
-├── README.md
-├── vite.config.js
-├── public/
-│   └── vite.svg
-└── src/
-    ├── App.jsx
-    ├── index.css
-    ├── main.jsx
-    ├── animations/
-    │   └── FadeIn.jsx
-    ├── assets/
-    ├── components/
-    │   ├── layout/
-    │   │   ├── Navbar.jsx
-    │   │   ├── PageShell.jsx
-    │   │   └── Sidebar.jsx
-    │   ├── score/
-    │   │   ├── ScoreCard.jsx
-    │   │   └── ShipScoreGauge.jsx
-    │   └── ui/
-    │       ├── Badge.jsx
-    │       ├── Button.jsx
-    │       └── Card.jsx
-    └── Pages/
-        ├── Dashboard.jsx
-        ├── FixPR.jsx
-        ├── Issues.jsx
-        ├── Landing.jsx
-        ├── Scan.jsx
-        └── Success.jsx
+├── src/
+│   ├── animations/     # Reusable animation components (e.g., FadeIn)
+│   ├── assets/         # Static assets like images and global styles
+│   ├── components/     # UI Building Blocks
+│   │   ├── Auth/       # Signin/Signup forms
+│   │   ├── layout/     # Navbar, Sidebar, PageShell
+│   │   ├── score/      # specialized score visualization components
+│   │   └── ui/         # Generic UI kit (Button, Card, Badge)
+│   ├── context/        # React Context providers (AuthContext)
+│   ├── lib/            # Utility functions and helpers
+│   │   ├── api.js      # API interaction layer
+│   │   ├── format.js   # Data formatting utilities
+│   │   ├── scoring.js  # Score calculation logic
+│   │   └── ...
+│   ├── Pages/          # Main route components (Dashboard, Issues, Scan, etc.)
+│   ├── services/       # External service integrations
+│   ├── App.jsx         # Main application entry & routing setup
+│   └── index.css       # Global styles & Tailwind imports
+├── public/             # Static public assets
+├── eslint.config.js    # ESLint configuration
+├── vite.config.js      # Vite configuration including Tailwind plugin
+└── package.json        # Dependencies and scripts
 ```
 
-## Key Imports and Dependencies
+## 🛠️ Setup & Installation
 
-### Main Application (App.jsx)
-- `BrowserRouter as Router, Routes, Route` from 'react-router-dom' - For client-side routing
-- Page components: Landing, Scan, FixPR, Issues, Dashboard, Success from './Pages/'
+Follow these steps to get the project running locally.
 
-### Package Dependencies
-- **React**: ^19.2.0 - Core React library
-- **React DOM**: ^19.2.0 - React rendering for web
-- **React Router DOM**: ^7.12.0 - Declarative routing for React
-- **Framer Motion**: ^12.27.5 - Animation library
-- **Tailwind CSS**: ^4.1.18 - Utility-first CSS framework
-- **Recharts**: ^3.6.0 - Chart library for React
-- **clsx**: ^2.1.1 - Utility for constructing className strings conditionally
-- **tailwind-merge**: ^3.4.0 - Utility for merging Tailwind CSS classes
+### Prerequisites
+- Node.js (Latest LTS recommended)
+- npm (comes with Node.js)
 
-### Component Imports
-- UI components (Button, Card, Badge) from './components/ui/'
-- Layout components (Navbar, Sidebar, PageShell) from './components/layout/'
-- Score components (ShipScoreGauge, ScoreCard) from './components/score/'
-- Animation components (FadeIn) from './animations/'
+### Installation
 
-## Getting Started
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd shipshield-frontend
+   ```
 
-1. Install dependencies: `npm install`
-2. Start development server: `npm run dev`
-3. Build for production: `npm run build`
-4. Preview production build: `npm run preview`
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-## Routing
+3. **Start the development server**
+   ```bash
+   npm run dev
+   ```
+   The app should now be running at `http://localhost:5173` (or the port shown in your terminal).
 
-The application uses React Router with the following routes:
-- `/` - Landing page
-- `/scan` - Scan page
-- `/fixpr` - Fix PR page
-- `/issues` - Issues page
-- `/dashboard` - Dashboard page
-- `/success` - Success page
+## 📜 Scripts
+
+| Script | Description |
+| :--- | :--- |
+| `npm run dev` | Starts the Vite development server. |
+| `npm run build` | Builds the application for production to the `dist` folder. |
+| `npm run preview` | Locally previews the production build. |
+| `npm run lint` | Runs ESLint to check for code quality issues. |
+
+## 🎨 Styling & Configuration
+
+### Tailwind CSS v4
+This project uses the latest Tailwind CSS v4. Configuration is handled primarily through CSS variables and the `@tailwindcss/vite` plugin in `vite.config.js`. You won't find a traditional `tailwind.config.js` file as v4 defaults to zero-configuration.
+
+### Utility Class Management
+We use `clsx` and `tailwind-merge` (often abstracted in `lib/utils.js` or directly used) to dynamically construct efficient and conflict-free class strings for components.
+
+## 🧩 Key Features
+
+- **Authentication**: Secure Sign-in/Sign-up flow.
+- **Dashboard**: High-level metrics with visual score gauges.
+- **Scanning**: Interface to trigger and view security scans.
+- **Issues**: Detailed list of potential vulnerabilities with sorting/filtering.
+- **Exporting**: Ability to export scan reports to CSV/PDF (via `lib/export.js`).

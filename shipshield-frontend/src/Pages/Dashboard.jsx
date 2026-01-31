@@ -12,7 +12,7 @@ import { AlertTriangle, MoveRight, X, FileText, CheckCircle, UploadCloud, Downlo
 import { motion } from 'framer-motion'
 import { containerVariants, itemVariants } from '../animations/variants'
 
-import { calculateScore } from '../services/Scoring' // Backend scoring function
+import { mapAnalysisData } from '../lib/scoring' // Helper to format backend data
 import { api } from '../services/api' // API helper to fetch repo data
 
 const Dashboard = () => {
@@ -30,7 +30,7 @@ const Dashboard = () => {
       try {
         const latestRepo = await api.getLatestRepo() // Fetch latest repo info from backend
         setRepoData(latestRepo)
-        const scored = calculateScore(latestRepo) // Call scoring backend
+        const scored = mapAnalysisData(latestRepo) // Format data for dashboard
         setAnalysisData(scored)
         setLoading(false)
       } catch (err) {
