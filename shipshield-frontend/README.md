@@ -2,7 +2,7 @@
 
 A modern, high-performance React application built for ShipShield, leveraging Vite, Tailwind CSS v4, and React 19. This dashboard provides users with real-time insights, scanning capabilities, and issue management for their repositories.
 
-## 🚀 Tech Stack
+## Tech Stack
 
 - **Core**: [React 19](https://react.dev/)
 - **Build Tool**: [Vite](https://vitejs.dev/)
@@ -14,7 +14,7 @@ A modern, high-performance React application built for ShipShield, leveraging Vi
 - **Icons**: [Lucide React](https://lucide.dev/)
 - **PDF Generation**: `jspdf` & `jspdf-autotable`
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 shipshield-frontend/
@@ -42,7 +42,7 @@ shipshield-frontend/
 └── package.json        # Dependencies and scripts
 ```
 
-## 🛠️ Setup & Installation
+## Setup & Installation
 
 Follow these steps to get the project running locally.
 
@@ -69,7 +69,7 @@ Follow these steps to get the project running locally.
    ```
    The app should now be running at `http://localhost:5173` (or the port shown in your terminal).
 
-## 📜 Scripts
+## Scripts
 
 | Script | Description |
 | :--- | :--- |
@@ -78,7 +78,7 @@ Follow these steps to get the project running locally.
 | `npm run preview` | Locally previews the production build. |
 | `npm run lint` | Runs ESLint to check for code quality issues. |
 
-## 🎨 Styling & Configuration
+## Styling & Configuration
 
 ### Tailwind CSS v4
 This project uses the latest Tailwind CSS v4. Configuration is handled primarily through CSS variables and the `@tailwindcss/vite` plugin in `vite.config.js`. You won't find a traditional `tailwind.config.js` file as v4 defaults to zero-configuration.
@@ -86,7 +86,7 @@ This project uses the latest Tailwind CSS v4. Configuration is handled primarily
 ### Utility Class Management
 We use `clsx` and `tailwind-merge` (often abstracted in `lib/utils.js` or directly used) to dynamically construct efficient and conflict-free class strings for components.
 
-## 🧩 Key Features
+## Key Features
 
 - **Authentication**: Secure Sign-in/Sign-up flow.
 - **Dashboard**: High-level metrics with visual score gauges.
