@@ -2,7 +2,7 @@
 
 Backend API for ShipShield - analyzes GitHub repositories for production readiness and generates fix PRs.
 
-**🔗 [Live Demo](https://medisure-ebon.vercel.app/) | [Backend API](https://shipshield-seven.vercel.app/)**
+**[Backend](https://shipshield-seven.vercel.app/)**
 
 ## Prerequisites
 
