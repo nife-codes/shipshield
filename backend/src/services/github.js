@@ -1,10 +1,18 @@
-const { Octokit } = require('octokit');
+let octokit;
 
-const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN
-});
+async function getOctokit() {
+  if (!octokit) {
+    const { Octokit } = await import('octokit');
+    octokit = new Octokit({
+      auth: process.env.GITHUB_TOKEN
+    });
+  }
+  return octokit;
+}
 
 async function getRepoData(repoUrl) {
+  const client = await getOctokit();
+  
   const match = repoUrl.match(/github\.com\/([^\/]+)\/([^\/]+)/);
   
   if (!match) {
@@ -16,11 +24,11 @@ async function getRepoData(repoUrl) {
 
   try {
     const [repoInfo, commits, contributors, readme, tree] = await Promise.all([
-      octokit.rest.repos.get({ owner, repo }),
-      octokit.rest.repos.listCommits({ owner, repo, per_page: 100 }),
-      octokit.rest.repos.listContributors({ owner, repo }),
-      octokit.rest.repos.getReadme({ owner, repo }).catch(() => null),
-      octokit.rest.git.getTree({ owner, repo, tree_sha: 'HEAD', recursive: true }).catch(() => null)
+      client.rest.repos.get({ owner, repo }),
+      client.rest.repos.listCommits({ owner, repo, per_page: 100 }),
+      client.rest.repos.listContributors({ owner, repo }),
+      client.rest.repos.getReadme({ owner, repo }).catch(() => null),
+      client.rest.git.getTree({ owner, repo, tree_sha: 'HEAD', recursive: true }).catch(() => null)
     ]);
 
     const files = tree ? tree.data.tree.map(item => item.path) : [];
