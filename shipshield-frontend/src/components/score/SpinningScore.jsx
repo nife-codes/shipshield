@@ -75,10 +75,10 @@ export default function SpinningScore({
           className="font-semibold text-[#4F5BD5]"
           style={{ fontSize: size * 0.28 }}
         >
-          <h1>{progress}</h1>
+          <h1 className="tabular-nums">{progress}</h1>
         </div>
-        <div className="text-xs tracking-widest text-gray-500">
-          <p>SCORE</p>
+        <div className="text-xs tracking-widest text-gray-500 uppercase">
+          <p>Score</p>
         </div>
       </div>
     </div>

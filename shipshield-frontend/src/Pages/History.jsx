@@ -3,7 +3,7 @@ import { FileText, Calendar, Clock, Star } from 'lucide-react';
 import { Skeleton } from '../components/ui/Skeleton';
 import { motion } from 'framer-motion';
 import { containerVariants, itemVariants } from '../animations/variants';
-
+import { formatHistoryData } from '../lib/history';
 import { api } from '../services/api';
 
 const History = () => {
@@ -13,46 +13,11 @@ const History = () => {
     React.useEffect(() => {
         const fetchHistory = async () => {
             try {
-                // Try fetching from API
                 const data = await api.getHistory();
-
-                // Helper to map score to Grade
-                const getGrade = (score) => {
-                    if (score >= 90) return 'A+';
-                    if (score >= 80) return 'A';
-                    if (score >= 70) return 'B';
-                    if (score >= 50) return 'C';
-                    return 'F';
-                };
-
-                const getColor = (grade) => {
-                    if (grade.startsWith('A')) return 'text-green-700 bg-green-200';
-                    if (grade.startsWith('B')) return 'text-blue-600 bg-blue-100';
-                    if (grade.startsWith('C')) return 'text-yellow-600 bg-yellow-100';
-                    return 'text-red-700 bg-red-200';
-                };
-
-                const formatted = data.map(item => {
-                    const grade = getGrade(item.score);
-                    // Handle timestamp: item.createdAt might be Firestore string or timestamp
-                    const date = item.createdAt && item.createdAt._seconds
-                        ? new Date(item.createdAt._seconds * 1000)
-                        : new Date(item.createdAt || Date.now());
-
-                    return {
-                        id: item.analysisId || item.id,
-                        repo: item.repoUrl ? item.repoUrl.replace('https://github.com/', '') : 'Unknown Repo',
-                        date: date.toLocaleDateString() + ' ' + date.toLocaleTimeString(),
-                        score: grade,
-                        scoreColor: getColor(grade),
-                        size: 'N/A'
-                    };
-                });
-
-                setHistoryData(formatted);
+                const formattedData = formatHistoryData(data);
+                setHistoryData(formattedData);
             } catch (err) {
                 console.error("Failed to fetch history:", err);
-                // On error, we could show empty state or error message
             } finally {
                 setLoading(false);
             }
@@ -85,10 +50,13 @@ const History = () => {
                     </div>
                 ))}
 
-                {!loading && historyData.map((item) => (
+                {!loading && historyData.map((item, index) => (
                     <motion.div
                         key={item.id}
                         variants={itemVariants}
+                        initial="hidden"
+                        animate="visible"
+                        transition={{ delay: index * 0.1 }}
                         whileHover={{ scale: 1.02, translateY: -5 }}
                         className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all cursor-pointer group flex flex-col items-center text-center relative overflow-hidden"
                     >

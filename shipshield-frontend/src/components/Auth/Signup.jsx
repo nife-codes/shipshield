@@ -68,6 +68,12 @@ const SignUp = () => {
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Create an account</h1>
           <p className="text-gray-500 mb-6">Start auditing your code in seconds.</p>
 
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+              <p className="text-red-800 text-sm">{error}</p>
+            </div>
+          )}
+
           <form onSubmit={handleSignUp} className="flex flex-col gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
@@ -78,6 +84,7 @@ const SignUp = () => {
                 className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F5BD5] focus:border-transparent text-gray-900"
                 placeholder="name@company.com"
                 required
+                disabled={loading}
               />
             </div>
             <div>
@@ -89,12 +96,13 @@ const SignUp = () => {
                 className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4F5BD5] focus:border-transparent text-gray-900"
                 placeholder="••••••••"
                 required
+                disabled={loading}
               />
             </div>
 
-            <button type="submit" className="mt-2 w-full justify-center">
-              Sign Up
-            </button>
+            <CustomButton type="submit" className="mt-2 w-full justify-center" disabled={loading}>
+              {loading ? 'Creating Account...' : 'Sign Up'}
+            </CustomButton>
           </form>
 
           <div className="relative my-6">

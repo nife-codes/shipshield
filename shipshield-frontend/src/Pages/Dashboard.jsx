@@ -1,17 +1,21 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import CustomButton from '../components/ui/Button'
 import SpinningScore from '../components/score/SpinningScore'
 import AuditMetricCard from '../components/ui/AuditMetricCard'
 import RepoScanModal from '../components/Auth/RepoScanModal'
 import { Skeleton } from '../components/ui/Skeleton'
+import Confetti from 'react-confetti'
+import { useWindowSize } from 'react-use'
+import { mapAnalysisData } from '../lib/utils'
+import { exportAsJSON, exportAsCSV, exportAsHTML, exportAsText } from '../lib/export'
 
 import {
   AlertTriangle, MoveRight, X,
-  FileText,
+  Shield,TestTube, Rocket, Download, ChevronDown, FileText,
   CheckCircle,
   UploadCloud,
-} from 'lucide-react'
+} from 'lucide-react';
 import { motion } from 'framer-motion'
 import { containerVariants, itemVariants } from '../animations/variants'
 
@@ -24,6 +28,10 @@ const Dashboard = () => {
   const location = useLocation();
   const [analysisData, setAnalysisData] = useState(location.state?.analysis || null);
   const [loading, setLoading] = useState(!location.state?.analysis);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const { width, height } = useWindowSize();
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const exportRef = useRef(null);
 
   useEffect(() => {
     if (!analysisData) {
@@ -31,9 +39,6 @@ const Dashboard = () => {
         try {
           const history = await api.getHistory();
           if (history && history.length > 0) {
-            // Transform history item back to analysis format if needed
-            // The history item structure: { id, score, categories, topIssues, repoUrl... }
-            // It matches what we need for mapData generally.
             setAnalysisData(history[0]);
           }
         } catch (err) {
@@ -49,88 +54,120 @@ const Dashboard = () => {
     }
   }, []);
 
-  // Helper to map 0-25 score to Grade/Color
-  const getGrade = (score) => {
-    if (score >= 22) return { grade: 'A', theme: 'success', badge: 'Excellent' };
-    if (score >= 18) return { grade: 'B', theme: 'info', badge: 'Good' };
-    if (score >= 14) return { grade: 'C', theme: 'warning', badge: 'Improve' };
-    return { grade: 'D', theme: 'danger', badge: 'Critical' };
-  };
+  // Trigger confetti for high scores
+  useEffect(() => {
+    if (analysisData && analysisData.score >= 80) {
+      setShowConfetti(true);
+      const timer = setTimeout(() => setShowConfetti(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [analysisData]);
 
-  const mapData = () => {
-    if (!analysisData) {
-      // Default/Placeholder data
-      return {
-        score: 56,
-        security: { val: 'C-', progress: 45, theme: 'danger', badge: 'Needs Work', desc: '3 High severity vulnerabilities detected' },
-        docs: { val: '58%', progress: 58, theme: 'warning', badge: 'Improve', desc: 'README missing setup instructions' },
-        testing: { val: '92%', progress: 92, theme: 'success', badge: 'Good', desc: 'All unit tests passed' },
-        deploy: { val: 'A', progress: 85, theme: 'info', badge: 'Stable', desc: 'Dockerfiles optimized' },
-        topIssues: ['High severity vulnerability in package.json', 'Missing .env.example file']
-      };
+  // Close export menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (exportRef.current && !exportRef.current.contains(event.target)) {
+        setShowExportMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleExport = (format) => {
+    const repoName = analysisData?.repoUrl?.split('/').pop() || 'shipshield_report';
+
+    switch (format) {
+      case 'json':
+        exportAsJSON(analysisData, repoName);
+        break;
+      case 'csv':
+        exportAsCSV(analysisData, repoName);
+        break;
+      case 'html':
+        exportAsHTML(analysisData, repoName);
+        break;
+      case 'text':
+        exportAsText(analysisData, repoName);
+        break;
+      default:
+        break;
     }
 
-    const { categories, score } = analysisData;
-    const sec = getGrade(categories.productionSafety.score);
-    const dep = getGrade(categories.deploymentReality.score);
-
-    return {
-      score: score,
-      security: {
-        val: sec.grade,
-        progress: (categories.productionSafety.score / 25) * 100,
-        theme: sec.theme,
-        badge: sec.badge,
-        desc: categories.productionSafety.issues[0] || 'No major issues found.'
-      },
-      docs: {
-        val: `${Math.round((categories.repoCredibility.score / 25) * 100)}%`,
-        progress: (categories.repoCredibility.score / 25) * 100,
-        theme: 'warning',
-        badge: 'Review',
-        desc: categories.repoCredibility.issues[0] || 'Documentation looks good.'
-      },
-      testing: {
-        val: `${Math.round((categories.developerExperience.score / 25) * 100)}%`,
-        progress: (categories.developerExperience.score / 25) * 100,
-        theme: 'success',
-        badge: 'Good',
-        desc: categories.developerExperience.issues[0] || 'Dev experience is solid.'
-      },
-      deploy: {
-        val: dep.grade,
-        progress: (categories.deploymentReality.score / 25) * 100,
-        theme: dep.theme,
-        badge: dep.badge,
-        desc: categories.deploymentReality.issues[0] || 'Deployment config valid.'
-      },
-      topIssues: analysisData.topIssues || []
-    };
+    setShowExportMenu(false);
   };
 
-  const data = mapData();
+  const data = mapAnalysisData(analysisData);
 
   return (
     <section className='min-h-screen bg-gray-50'>
+      {showConfetti && (
+        <Confetti
+          width={width}
+          height={height}
+          recycle={false}
+          numberOfPieces={500}
+          gravity={0.3}
+        />
+      )}
       <header className='flex flex-col lg:flex-row justify-between items-start lg:items-center bg-white border-b border-[#E2E8F0] px-6 py-4 gap-4'>
         <div>
           <p className='text-sm text-[#475569] font-medium'>{analysisData?.repoUrl || 'Repo name'}</p>
-          <h1 className='text-3xl font-bold text-black mt-1'>Readiness Audit</h1>
+          <h1 className='text-3xl font-bold text-gray-900 mt-1'>Analysis Dashboard</h1>
         </div>
+        <div className='flex gap-3'>
+          {/* Export Dropdown */}
+          {analysisData && (
+            <div className='relative' ref={exportRef}>
+              <button
+                onClick={() => setShowExportMenu(!showExportMenu)}
+                className='flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium text-gray-700'
+              >
+                <Download size={18} />
+                Export Report
+                <ChevronDown size={16} />
+              </button>
 
-        <div className='flex flex-wrap gap-3 w-full lg:w-auto'>
-          <CustomButton
-            variant="outline"
-            className="w-full sm:w-auto"
-            onClick={() => setIsModalOpen(true)}
-          >
-            Re-scan
-          </CustomButton>
-          <CustomButton className="w-full sm:w-auto">
-            Export Report
+              {showExportMenu && (
+                <div className='absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10'>
+                  <button
+                    onClick={() => handleExport('json')}
+                    className='w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center gap-2 text-gray-700 first:rounded-t-lg'
+                  >
+                    <Download size={16} />
+                    JSON Format
+                  </button>
+                  <button
+                    onClick={() => handleExport('csv')}
+                    className='w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center gap-2 text-gray-700 border-t border-gray-100'
+                  >
+                    <Download size={16} />
+                    CSV Format
+                  </button>
+                  <button
+                    onClick={() => handleExport('html')}
+                    className='w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center gap-2 text-gray-700 border-t border-gray-100'
+                  >
+                    <Download size={16} />
+                    HTML Report
+                  </button>
+                  <button
+                    onClick={() => handleExport('text')}
+                    className='w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center gap-2 text-gray-700 border-t border-gray-100 last:rounded-b-lg'
+                  >
+                    <Download size={16} />
+                    Text File
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          <CustomButton onClick={() => setIsModalOpen(true)} color="primary" variant="solid">
+            New Scan
           </CustomButton>
         </div>
-
       </header>
 
 
@@ -172,9 +209,15 @@ const Dashboard = () => {
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 mt-4 items-start sm:items-center">
-                  <div className="bg-[#FDE68A] flex items-center gap-2 rounded-lg font-bold py-2 px-4 text-[#B45309]">
-                    <AlertTriangle size={20} /> {data.score < 80 ? 'not production ready' : 'Production Ready'}
-                  </div>
+                  {data.score >= 80 ? (
+                    <div className="bg-gradient-to-r from-green-500 to-emerald-500 flex items-center gap-2 rounded-lg font-bold py-2.5 px-5 text-white shadow-lg">
+                      🎉 Production Ready!
+                    </div>
+                  ) : (
+                    <div className="bg-[#FDE68A] flex items-center gap-2 rounded-lg font-bold py-2 px-4 text-[#B45309]">
+                      <AlertTriangle size={20} /> Not Production Ready
+                    </div>
+                  )}
                   <p className="text-[#64748B] text-sm mt-1 sm:mt-0">last scanned just now</p>
                 </div>
 
@@ -208,65 +251,75 @@ const Dashboard = () => {
           )}
         </motion.div>
 
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-6xl'
-        >
-          <motion.div variants={itemVariants} className="h-full">
-            <AuditMetricCard
-              title="Security Audit"
-              icon={X}
-              value={data.security.val}
-              valueLabel="Critical Issues"
-              badge={data.security.badge}
-              description={data.security.desc}
-              progress={data.security.progress}
-              theme={data.security.theme}
-            />
-          </motion.div>
+        {loading && (
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-6xl'>
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-48 w-full rounded-xl" />
+            ))}
+          </div>
+        )}
 
-          <motion.div variants={itemVariants} className="h-full">
-            <AuditMetricCard
-              title="Documentation"
-              icon={FileText}
-              value={data.docs.val}
-              valueLabel="Coverage"
-              badge={data.docs.badge}
-              description={data.docs.desc}
-              progress={data.docs.progress}
-              theme={data.docs.theme}
-            />
-          </motion.div>
+        {data && !loading && (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-6xl'
+          >
+            <motion.div variants={itemVariants} className="h-full">
+              <AuditMetricCard
+                title="Security Audit"
+                icon={X}
+                value={data.security.val}
+                valueLabel="Critical Issues"
+                badge={data.security.badge}
+                description={data.security.desc}
+                progress={data.security.progress}
+                theme={data.security.theme}
+              />
+            </motion.div>
 
-          <motion.div variants={itemVariants} className="h-full">
-            <AuditMetricCard
-              title="CI & Testing"
-              icon={CheckCircle}
-              value={data.testing.val}
-              valueLabel="Pass Rate"
-              badge={data.testing.badge}
-              description={data.testing.desc}
-              progress={data.testing.progress}
-              theme={data.testing.theme}
-            />
-          </motion.div>
+            <motion.div variants={itemVariants} className="h-full">
+              <AuditMetricCard
+                title="Documentation"
+                icon={FileText}
+                value={data.docs.val}
+                valueLabel="Coverage"
+                badge={data.docs.badge}
+                description={data.docs.desc}
+                progress={data.docs.progress}
+                theme={data.docs.theme}
+              />
+            </motion.div>
 
-          <motion.div variants={itemVariants} className="h-full">
-            <AuditMetricCard
-              title="Deployment"
-              icon={UploadCloud}
-              value={data ? data.deploy.val : '-'}
-              valueLabel="Config Score"
-              badge={data ? data.deploy.badge : ''}
-              description={data ? data.deploy.desc : ''}
-              progress={data ? data.deploy.progress : 0}
-              theme={data ? data.deploy.theme : 'gray'}
-            />
-          </motion.div>
+            <motion.div variants={itemVariants} className="h-full">
+              <AuditMetricCard
+                title="CI & Testing"
+                icon={CheckCircle}
+                value={data.testing.val}
+                valueLabel="Pass Rate"
+                badge={data.testing.badge}
+                description={data.testing.desc}
+                progress={data.testing.progress}
+                theme={data.testing.theme}
+              />
+            </motion.div>
 
-        </motion.div>
+            <motion.div variants={itemVariants} className="h-full">
+              <AuditMetricCard
+                title="Deployment"
+                icon={UploadCloud}
+                value={data ? data.deploy.val : '-'}
+                valueLabel="Config Score"
+                badge={data ? data.deploy.badge : ''}
+                description={data ? data.deploy.desc : ''}
+                progress={data ? data.deploy.progress : 0}
+                theme={data ? data.deploy.theme : 'gray'}
+              />
+            </motion.div>
+
+          </motion.div>
+        )}
 
       </main>
 
@@ -274,7 +327,7 @@ const Dashboard = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
-    </section>
+    </section >
   )
 }
 
