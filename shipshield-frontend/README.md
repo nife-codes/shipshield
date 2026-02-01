@@ -1,5 +1,7 @@
 # ShipShield Frontend
 
+**🔗 [LIVE DEMO](https://shipshield-othb.vercel.app)**
+
 A modern, high-performance React application built for ShipShield, leveraging Vite, Tailwind CSS v4, and React 19. This dashboard provides users with real-time insights, scanning capabilities, and issue management for their repositories.
 
 ## Tech Stack
