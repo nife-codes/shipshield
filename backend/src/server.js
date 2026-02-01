@@ -127,9 +127,12 @@ app.post("/api/analyze", authMiddleware, async (req, res) => {
         repoCredibility: result.categories.repoCredibility,
         productionSafety: result.categories.productionSafety,
         developerExperience: result.categories.developerExperience,
+        packageQuality: result.categories.packageQuality,
+        codeQuality: result.categories.codeQuality
       },
       topIssues: result.topIssues,
       repoUrl,
+      name: repoData.name,
       deploymentUrl,
       analysisId: Date.now().toString(),
     });

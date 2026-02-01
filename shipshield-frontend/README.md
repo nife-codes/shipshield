@@ -78,7 +78,7 @@ Follow these steps to get the project running locally.
 | `npm run preview` | Locally previews the production build. |
 | `npm run lint` | Runs ESLint to check for code quality issues. |
 
-## Styling & Configuration
+## 🎨 Styling & Configuration
 
 ### Tailwind CSS v4
 This project uses the latest Tailwind CSS v4. Configuration is handled primarily through CSS variables and the `@tailwindcss/vite` plugin in `vite.config.js`. You won't find a traditional `tailwind.config.js` file as v4 defaults to zero-configuration.
@@ -88,8 +88,38 @@ We use `clsx` and `tailwind-merge` (often abstracted in `lib/utils.js` or direct
 
 ## Key Features
 
-- **Authentication**: Secure Sign-in/Sign-up flow.
-- **Dashboard**: High-level metrics with visual score gauges.
-- **Scanning**: Interface to trigger and view security scans.
-- **Issues**: Detailed list of potential vulnerabilities with sorting/filtering.
-- **Exporting**: Ability to export scan reports to CSV/PDF (via `lib/export.js`).
+### Core Functionality
+- **Authentication**: Secure Sign-in/Sign-up flow with demo user option
+- **Dashboard**: High-level metrics with visual score gauges and real-time repository analysis
+- **Repository Scanning**: GitHub repository analysis with comprehensive security, quality, and best practice checks
+- **Issues Management**: Detailed issue breakdown with expandable fix suggestions
+- **PR Generation**: Automated pull request creation with selected fixes
+
+### Enhanced Scanning System (v2.0)
+The application now provides 5-10x more insights with advanced analysis:
+
+**Backend Analysis:**
+- Package.json deep analysis (dependencies, scripts, testing frameworks)
+- TypeScript configuration checking (strict mode detection)
+- Code quality metrics (test file ratio, TS adoption %)
+- ESLint configuration verification
+- 6 analysis categories (vs 4 previously)
+
+**Frontend Enhancements:**
+- Smart fix suggestions with specific commands
+- Contextual recommendations based on issue type
+- Real file generation for PRs (test files, configs, documentation)
+
+### Fix Generation Features
+- **Smart README Generator**: Analyzes project type and generates comprehensive documentation
+- **Configuration Files**: Automatically creates `.eslintrc.json`, `tsconfig.json`, test examples
+- **Security Files**: Generates `SECURITY.md`, `.gitignore`, `.env.example`
+- **CI/CD Setup**: Creates GitHub Actions workflows
+- **Docker Support**: Generates Dockerfile and docker-compose.yml
+
+### PR Management
+- Intelligent file conflict resolution (checks for existing files before updating)
+- Bulk fix selection with visual feedback
+- Detailed PR descriptions with file listings
+- Support for both new file creation and existing file updates
+eports to CSV/PDF (via `lib/export.js`).

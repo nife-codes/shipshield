@@ -69,18 +69,21 @@ const Issues = () => {
   }
 
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="min-h-screen bg-gray-50 p-6 md:p-10"
-    >
+    <>
       {/* Page Header */}
-      <div className="mb-8">
+      <div className="bg-white border-b border-[#E2E8F0] px-6 py-4  mb-4">
         <h1 className="text-3xl font-bold text-black">Issues</h1>
         <p className="text-[#64748B] mt-1">
           Detailed breakdown of problems affecting your project’s ship readiness.
         </p>
       </div>
+   
+    <motion.section
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="min-h-screen bg-gray-50 p-6 md:p-10"
+    >
+    
 
       {/* Issues List */}
       <div className="space-y-4 max-w-5xl">
@@ -167,6 +170,7 @@ const Issues = () => {
         )}
       </div>
     </motion.section>
+     </>
   )
 }
 
