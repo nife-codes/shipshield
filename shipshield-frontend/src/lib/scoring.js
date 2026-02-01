@@ -99,6 +99,20 @@ export const mapAnalysisData = (analysisData) => {
             badge: dep.badge,
             desc: categories.deploymentReality.issues[0] || 'Deployment config valid.'
         },
+        packageQuality: {
+            val: `${Math.round(scoreToPercentage(categories.packageQuality?.score || 0))}%`,
+            progress: scoreToPercentage(categories.packageQuality?.score || 0),
+            theme: (categories.packageQuality?.score || 0) > 10 ? 'success' : 'warning',
+            badge: (categories.packageQuality?.score || 0) > 10 ? 'Good' : 'Needs Work',
+            desc: categories.packageQuality?.issues[0] || 'Package configuration looks good.'
+        },
+        codeQuality: {
+            val: `${Math.round(scoreToPercentage(categories.codeQuality?.score || 0))}%`,
+            progress: scoreToPercentage(categories.codeQuality?.score || 0),
+            theme: (categories.codeQuality?.score || 0) > 8 ? 'success' : 'warning',
+            badge: (categories.codeQuality?.score || 0) > 8 ? 'Excellent' : 'Improve',
+            desc: categories.codeQuality?.issues[0] || 'Code quality is good.'
+        },
         topIssues: analysisData.topIssues || []
     };
 };

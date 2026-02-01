@@ -9,19 +9,19 @@
  * @returns {Array} Array of {path, content} objects for PR
  */
 export const generateFileChanges = (selectedFixes) => {
-    const files = []
-    const processedTypes = new Set()
+  const files = []
+  const processedTypes = new Set()
 
-    selectedFixes.forEach(fix => {
-        const desc = (fix.description || fix.title || '').toLowerCase()
-        const title = (fix.title || '').toLowerCase()
+  selectedFixes.forEach(fix => {
+    const desc = (fix.description || fix.title || '').toLowerCase()
+    const title = (fix.title || '').toLowerCase()
 
-        // Environment Variables
-        if ((desc.includes('.env') || desc.includes('environment')) && !processedTypes.has('env')) {
-            processedTypes.add('env')
-            files.push({
-                path: '.env.example',
-                content: `# Environment Variables
+    // Environment Variables
+    if ((desc.includes('.env') || desc.includes('environment')) && !processedTypes.has('env')) {
+      processedTypes.add('env')
+      files.push({
+        path: '.env.example',
+        content: `# Environment Variables
 # Copy this file to .env and fill in your values
 
 # Server Configuration
@@ -40,15 +40,15 @@ NODE_ENV=development
 # Other Configuration
 # Add your project-specific environment variables below
 `
-            })
-        }
+      })
+    }
 
-        // License
-        if ((desc.includes('license') || title.includes('license')) && !processedTypes.has('license')) {
-            processedTypes.add('license')
-            files.push({
-                path: 'LICENSE',
-                content: `MIT License
+    // License
+    if ((desc.includes('license') || title.includes('license')) && !processedTypes.has('license')) {
+      processedTypes.add('license')
+      files.push({
+        path: 'LICENSE',
+        content: `MIT License
 
 Copyright (c) ${new Date().getFullYear()} [Project Name]
 
@@ -70,15 +70,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 `
-            })
-        }
+      })
+    }
 
-        // README improvements
-        if ((desc.includes('readme') || desc.includes('documentation')) && !processedTypes.has('readme')) {
-            processedTypes.add('readme')
-            files.push({
-                path: 'CONTRIBUTING.md',
-                content: `# Contributing Guidelines
+    // README improvements
+    if ((desc.includes('readme') || desc.includes('documentation')) && !processedTypes.has('readme')) {
+      processedTypes.add('readme')
+      files.push({
+        path: 'CONTRIBUTING.md',
+        content: `# Contributing Guidelines
 
 Thank you for considering contributing to this project!
 
@@ -109,15 +109,15 @@ Thank you for considering contributing to this project!
 
 Feel free to open an issue for discussion.
 `
-            })
-        }
+      })
+    }
 
-        // Docker
-        if ((desc.includes('docker') || desc.includes('container')) && !processedTypes.has('docker')) {
-            processedTypes.add('docker')
-            files.push({
-                path: 'Dockerfile',
-                content: `FROM node:18-alpine
+    // Docker
+    if ((desc.includes('docker') || desc.includes('container')) && !processedTypes.has('docker')) {
+      processedTypes.add('docker')
+      files.push({
+        path: 'Dockerfile',
+        content: `FROM node:18-alpine
 
 WORKDIR /app
 
@@ -136,11 +136,11 @@ EXPOSE 3000
 # Start application
 CMD ["npm", "start"]
 `
-            })
+      })
 
-            files.push({
-                path: 'docker-compose.yml',
-                content: `version: '3.8'
+      files.push({
+        path: 'docker-compose.yml',
+        content: `version: '3.8'
 
 services:
   app:
@@ -155,15 +155,15 @@ services:
 
   # Add other services as needed (database, redis, etc.)
 `
-            })
-        }
+      })
+    }
 
-        // .gitignore
-        if ((desc.includes('gitignore') || desc.includes('git ignore')) && !processedTypes.has('gitignore')) {
-            processedTypes.add('gitignore')
-            files.push({
-                path: '.gitignore',
-                content: `# Dependencies
+    // .gitignore
+    if ((desc.includes('gitignore') || desc.includes('git ignore')) && !processedTypes.has('gitignore')) {
+      processedTypes.add('gitignore')
+      files.push({
+        path: '.gitignore',
+        content: `# Dependencies
 node_modules/
 npm-debug.log*
 yarn-debug.log*
@@ -203,15 +203,15 @@ logs/
 tmp/
 temp/
 `
-            })
-        }
+      })
+    }
 
-        // CI/CD
-        if ((desc.includes('ci') || desc.includes('github actions') || desc.includes('continuous integration')) && !processedTypes.has('ci')) {
-            processedTypes.add('ci')
-            files.push({
-                path: '.github/workflows/ci.yml',
-                content: `name: CI
+    // CI/CD
+    if ((desc.includes('ci') || desc.includes('github actions') || desc.includes('continuous integration')) && !processedTypes.has('ci')) {
+      processedTypes.add('ci')
+      files.push({
+        path: '.github/workflows/ci.yml',
+        content: `name: CI
 
 on:
   push:
@@ -248,15 +248,99 @@ jobs:
     - name: Build
       run: npm run build
 `
-            })
-        }
+      })
+    }
 
-        // Security - package.json script suggestions
-        if ((desc.includes('security') || desc.includes('vulnerability')) && !processedTypes.has('security')) {
-            processedTypes.add('security')
-            files.push({
-                path: 'SECURITY.md',
-                content: `# Security Policy
+    // Testing - add test examples
+    if ((desc.includes('no test script') || desc.includes('no test files') || (desc.includes('test') && title.includes('test'))) && !processedTypes.has('test')) {
+      processedTypes.add('test')
+      files.push({
+        path: 'tests/example.test.js',
+        content: `// Example test file
+// Install testing framework: npm install --save-dev jest
+
+describe('Example Test Suite', () => {
+  test('should add two numbers correctly', () => {
+    const result = 2 + 2;
+    expect(result).toBe(4);
+  });
+
+  test('should handle edge cases', () => {
+    expect(null).toBeNull();
+    expect(undefined).toBeUndefined();
+  });
+});
+
+// Add this to package.json scripts:
+// "test": "jest"
+// "test:watch": "jest --watch"
+// "test:coverage": "jest --coverage"
+`
+      })
+    }
+
+    // Linting - add ESLint config
+    if ((desc.includes('no linting') || desc.includes('no eslint') || desc.includes('eslint')) && !processedTypes.has('eslint')) {
+      processedTypes.add('eslint')
+      files.push({
+        path: '.eslintrc.json',
+        content: `{
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true
+  },
+  "extends": [
+    "eslint:recommended"
+  ],
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-console": "warn",
+    "no-unused-vars": "warn",
+    "semi": ["error", "always"],
+    "quotes": ["error", "single"]
+  }
+}
+`
+      })
+    }
+
+    // TypeScript config
+    if ((desc.includes('typescript not in strict mode') || (desc.includes('typescript') && !processedTypes.has('typescript'))) && !processedTypes.has('typescript')) {
+      processedTypes.add('typescript')
+      files.push({
+        path: 'tsconfig.json',
+        content: `{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM"],
+    "jsx": "react-jsx",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true
+  },
+  "include": ["src"],
+  "exclude": ["node_modules"]
+}
+`
+      })
+    }
+
+    // Security - package.json script suggestions
+    if ((desc.includes('security') || desc.includes('vulnerability')) && !processedTypes.has('security')) {
+      processedTypes.add('security')
+      files.push({
+        path: 'SECURITY.md',
+        content: `# Security Policy
 
 ## Supported Versions
 
@@ -284,20 +368,20 @@ We will acknowledge your email within 48 hours and provide a timeline for a fix.
 - Use environment variables for sensitive data
 - Never commit secrets to the repository
 `
-            })
-        }
-    })
+      })
+    }
+  })
 
-    // If no files generated, provide at least a basic improvement
-    if (files.length === 0) {
-        files.push({
-            path: '.env.example',
-            content: `# Environment Variables
+  // If no files generated, provide at least a basic improvement
+  if (files.length === 0) {
+    files.push({
+      path: '.env.example',
+      content: `# Environment Variables
 PORT=3000
 NODE_ENV=development
 `
-        })
-    }
+    })
+  }
 
-    return files
+  return files
 }
