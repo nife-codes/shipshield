@@ -2,7 +2,7 @@
 
 Ship-readiness checker for GitHub projects. Analyzes deployment health, security, docs, and developer experience. Outputs a Ship Score (0-100) and auto-generates PRs with fixes.
 
-**🔗 [LIVE DEMO](https:) | [LIVE BACKEND](https://shipshield-seven.vercel.app/)**
+**🔗 [LIVE DEMO](https://shipshield-othb.vercel.app) | [LIVE BACKEND](https://shipshield-seven.vercel.app/)**
 
 
 ## How It Works
