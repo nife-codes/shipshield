@@ -41,16 +41,44 @@ async function generatePR(repoUrl, filesToAdd = []) {
       sha: latestSha
     });
 
+    // Create files in the new branch
     for (const file of filesToAdd) {
-      const { path, content } = file;
-      await client.rest.repos.createOrUpdateFileContents({
-        owner,
-        repo,
-        path,
-        message: `[ShipShield] Auto-fix: ${path}`,
-        content: Buffer.from(content).toString('base64'),
-        branch: newBranch
-      });
+      try {
+        // Check if file already exists to get its SHA (needed for updates)
+        let fileSha = null;
+        try {
+          const existingFile = await client.rest.repos.getContent({
+            owner,
+            repo,
+            path: file.path,
+            ref: newBranch
+          });
+          fileSha = existingFile.data.sha;
+        } catch (error) {
+          // File doesn't exist, which is fine for new files
+          // console.log(`File ${file.path} does not exist, creating new.`);
+        }
+
+        const createFileParams = {
+          owner,
+          repo,
+          path: file.path,
+          message: `[ShipShield] Auto-fix: Add ${file.path}`,
+          content: Buffer.from(file.content).toString('base64'),
+          branch: newBranch
+        };
+
+        // Only add SHA if file exists (for updates)
+        if (fileSha) {
+          createFileParams.sha = fileSha;
+          createFileParams.message = `[ShipShield] Auto-fix: Update ${file.path}`;
+        }
+
+        await client.rest.repos.createOrUpdateFileContents(createFileParams);
+      } catch (fileError) {
+        console.error(`Failed to create/update file ${file.path}:`, fileError.message);
+        throw fileError; // Re-throw to fail the PR generation if a file fails
+      }
     }
 
     const { data: pr } = await client.rest.pulls.create({
