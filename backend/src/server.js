@@ -1,5 +1,4 @@
 const express = require("express");
-const cors = require("cors");
 require("dotenv").config();
 
 const swaggerUi = require("swagger-ui-express");
@@ -17,7 +16,18 @@ const authMiddleware = require("./middleware/authGuard");
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+  next();
+});
+
 app.use(express.json());
 
 // Routes
@@ -55,7 +65,7 @@ const swaggerSpec = swaggerJSDoc({
       },
     ],
   },
-  apis: ["./src/server.js", "./src/routes/*.js"], // <-- path to your JS files with Swagger comments
+  apis: ["./src/server.js", "./src/routes/*.js"],
 });
 
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -193,7 +203,6 @@ app.get("/api/history", authMiddleware, async (req, res) => {
 app.post("/api/pr", async (req, res) => {
   let { repoUrl, filesToAdd } = req.body;
 
-  // Only use default if absolutely no files provided
   if (!filesToAdd || !Array.isArray(filesToAdd) || filesToAdd.length === 0) {
     return res.status(400).json({
       error: "No files to add. Please select at least one fix to include in the PR."
