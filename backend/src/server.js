@@ -1,0 +1,232 @@
+const express = require("express");
+require("dotenv").config();
+
+const swaggerUi = require("swagger-ui-express");
+const swaggerJSDoc = require("swagger-jsdoc");
+
+const { getRepoData } = require("./services/github");
+const { calculateScore } = require("./services/scoring");
+const { checkDeployment } = require("./services/deploy.service");
+const { generatePR } = require("./services/pr.service");
+
+const { saveScan, getUserScans } = require("./services/history.service");
+
+const authMiddleware = require("./middleware/authGuard");
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+  next();
+});
+
+app.use(express.json());
+
+// Routes
+const authRoutes = require("./routes/auth");
+app.use("/api/auth", authRoutes);
+
+// Swagger configuration
+const swaggerSpec = swaggerJSDoc({
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "ShipShield API",
+      version: "1.0.0",
+      description:
+        "API for analyzing GitHub repos, checking deployments, and auto-generating PRs",
+    },
+    servers: [
+      {
+        url: `http://localhost:${PORT}`,
+      },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
+    },
+
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
+  },
+  apis: ["./src/server.js", "./src/routes/*.js"],
+});
+
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+/**
+ * @swagger
+ * /api/health:
+ *   get:
+ *     summary: Health check
+ *     description: Confirms the API is running
+ *     responses:
+ *       200:
+ *         description: Server is healthy
+ */
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", message: "ShipShield API is running" });
+});
+
+/**
+ * @swagger
+ * /api/analyze:
+ *   post:
+ *     summary: Analyze GitHub repo and compute Ship Score
+ *     tags: [Analysis]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               repoUrl:
+ *                 type: string
+ *                 example: https://github.com/vercel/next.js
+ *               deploymentUrl:
+ *                 type: string
+ *                 example: https://example.vercel.app
+ *     responses:
+ *       200:
+ *         description: Analysis result
+ */
+app.post("/api/analyze", authMiddleware, async (req, res) => {
+  const { repoUrl, deploymentUrl } = req.body;
+  const userId = req.user.uid;
+
+  try {
+    const repoData = await getRepoData(repoUrl);
+    const deploymentData = await checkDeployment(deploymentUrl);
+    const result = calculateScore(repoData, deploymentData);
+
+    const scanRecord = {
+      userId,
+      repoUrl,
+      deploymentUrl,
+      score: result.score,
+      categories: result.categories,
+      topIssues: result.topIssues,
+      createdAt: new Date(),
+    };
+
+    await saveScan(scanRecord);
+
+    res.json({
+      score: result.score,
+      categories: {
+        deploymentReality: result.categories.deploymentReality,
+        repoCredibility: result.categories.repoCredibility,
+        productionSafety: result.categories.productionSafety,
+        developerExperience: result.categories.developerExperience,
+        packageQuality: result.categories.packageQuality,
+        codeQuality: result.categories.codeQuality
+      },
+      topIssues: result.topIssues,
+      repoUrl,
+      name: repoData.name,
+      deploymentUrl,
+      analysisId: Date.now().toString(),
+    });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/history:
+ *   get:
+ *     summary: Fetch user's past scans
+ *     tags: [History]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of previous analyses
+ */
+app.get("/api/history", authMiddleware, async (req, res) => {
+  try {
+    const scans = await getUserScans(req.user.uid);
+    res.json(scans);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/pr:
+ *   post:
+ *     summary: Generate PR with fixes
+ *     tags: [PR]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               repoUrl:
+ *                 type: string
+ *               filesToAdd:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     path:
+ *                       type: string
+ *                     content:
+ *                       type: string
+ *     responses:
+ *       200:
+ *         description: PR created successfully
+ */
+app.post("/api/pr", async (req, res) => {
+  let { repoUrl, filesToAdd } = req.body;
+
+  if (!filesToAdd || !Array.isArray(filesToAdd) || filesToAdd.length === 0) {
+    return res.status(400).json({
+      error: "No files to add. Please select at least one fix to include in the PR."
+    });
+  }
+
+  if (!repoUrl) {
+    return res.status(400).json({ error: "repoUrl is required" });
+  }
+
+  try {
+    const prInfo = await generatePR(repoUrl, filesToAdd);
+
+    res.json({
+      message: "PR created successfully",
+      prInfo,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Swagger docs available at http://localhost:${PORT}/api/docs`);
+});

@@ -4,10 +4,16 @@ import CustomButton from '../components/ui/Button'
 import AnalysisSteps from '../components/ui/AnalysisSteps'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
+import { api } from '../services/api';
 
 const Scan = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const repoUrl = location.state?.repoUrl || 'https://github.com/example/repo';
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [analysisResult, setAnalysisResult] = useState(null);
+  const [error, setError] = useState(null);
 
   const steps = [
     { title: 'Repository cloned successfully', duration: 1000 },
@@ -25,13 +31,34 @@ const Scan = () => {
   })));
 
   useEffect(() => {
-    if (currentStepIndex >= steps.length) {
-      // All done, wait a bit then redirect
+    const startAnalysis = async () => {
+      try {
+        // Use a placeholder deploymentUrl if none is provided via state or input
+        const deploymentUrl = location.state?.deploymentUrl || 'https://example.com';
+        const result = await api.analyzeRepo(repoUrl, deploymentUrl);
+        setAnalysisResult(result);
+      } catch (err) {
+        console.error("Analysis failed:", err);
+        setError(err.message);
+      }
+    };
+
+    if (repoUrl && !analysisResult && !error) {
+      startAnalysis();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (analysisResult && currentStepIndex >= steps.length) {
+      // All done, wait a bit then redirect to success page
       const timer = setTimeout(() => {
-        ;
+        navigate('/dashboard', { state: { analysis: analysisResult } });
       }, 1500);
       return () => clearTimeout(timer);
     }
+
+    if (!analysisResult || currentStepIndex >= steps.length) return;
 
     const currentStep = steps[currentStepIndex];
 
@@ -53,7 +80,30 @@ const Scan = () => {
     }, currentStep.duration);
 
     return () => clearTimeout(timer);
-  }, [currentStepIndex, navigate]);
+  }, [currentStepIndex, analysisResult, navigate]);
+
+  if (error) {
+    return (
+      <section className='bg-[#F2F3F7] flex justify-center p-4 md:p-10 items-center min-h-screen'>
+        <motion.main
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", bounce: 0.1, duration: 0.8 }}
+          className='bg-white flex flex-col border border-red-200 items-center rounded-lg p-6 md:p-10 w-full max-w-2xl shadow-xl'
+        >
+          <h1 className='text-black uppercase text-2xl text-center font-bold'>Analysis Failed</h1>
+          <p className='text-red-600 font-medium text-sm text-center mt-3 px-4'>
+            {error}
+          </p>
+          <div className='mt-6'>
+            <CustomButton onClick={() => navigate('/dashboard')}>
+              Try Another Repository
+            </CustomButton>
+          </div>
+        </motion.main>
+      </section>
+    );
+  }
 
   return (
     <section className='bg-[#F2F3F7] flex justify-center p-4 md:p-10 items-center min-h-screen'>
@@ -65,7 +115,7 @@ const Scan = () => {
       >
         <h1 className='text-black uppercase text-2xl text-center font-bold'>Analyzing Repository</h1>
         <p className='text-gray-600 font-medium text-sm text-center mt-3 px-4'>
-          ShipSafe is running a comprehensive readiness audit on <span className='bg-[#F3F4F6] px-2 py-1 rounded text-[#6B7280] font-mono break-all'>Repo name</span>
+          ShipShield is running a comprehensive readiness audit on <span className='bg-[#F3F4F6] px-2 py-1 rounded text-[#6B7280] font-mono break-all'>{repoUrl}</span>
         </p>
 
         <motion.div
@@ -74,7 +124,7 @@ const Scan = () => {
           animate={{ scale: 1 }}
           transition={{ type: "spring", bounce: 0.3, delay: 0.2 }}
         >
-          <SpinningScore score={56} size={150} />
+          <SpinningScore score={analysisResult?.score || 0} size={150} />
         </motion.div>
 
         <div className="w-full mt-6">

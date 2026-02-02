@@ -1,18 +1,30 @@
 import React from 'react';
 import { FileText, Calendar, Clock, Star } from 'lucide-react';
+import { Skeleton } from '../components/ui/Skeleton';
 import { motion } from 'framer-motion';
 import { containerVariants, itemVariants } from '../animations/variants';
+import { formatHistoryData } from '../lib/history';
+import { api } from '../services/api';
 
 const History = () => {
-    // Mock data for past scans
-    const historyData = [
-        { id: 1, repo: 'shipshield-frontend', date: '2 mins ago', score: 'B+', scoreColor: 'text-yellow-600 bg-yellow-100', size: '2.4 MB' },
-        { id: 2, repo: 'backend-api-v2', date: 'Yesterday', score: 'A', scoreColor: 'text-green-600 bg-green-100', size: '1.8 MB' },
-        { id: 3, repo: 'auth-service', date: '2 days ago', score: 'C', scoreColor: 'text-red-600 bg-red-100', size: '850 KB' },
-        { id: 4, repo: 'legacy-monolith', date: 'Last week', score: 'F', scoreColor: 'text-red-700 bg-red-200', size: '150 MB' },
-        { id: 5, repo: 'design-system', date: '2 weeks ago', score: 'A+', scoreColor: 'text-green-700 bg-green-200', size: '5.2 MB' },
-        { id: 6, repo: 'mobile-app-react-native', date: '1 month ago', score: 'B', scoreColor: 'text-blue-600 bg-blue-100', size: '12 MB' },
-    ];
+    const [historyData, setHistoryData] = React.useState([]);
+    const [loading, setLoading] = React.useState(true);
+
+    React.useEffect(() => {
+        const fetchHistory = async () => {
+            try {
+                const data = await api.getHistory();
+                const formattedData = formatHistoryData(data);
+                setHistoryData(formattedData);
+            } catch (err) {
+                console.error("Failed to fetch history:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchHistory();
+    }, []);
 
 
 
@@ -29,10 +41,22 @@ const History = () => {
                 animate="visible"
                 className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-6"
             >
-                {historyData.map((item) => (
+                {loading && [1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                    <div key={i} className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm flex flex-col items-center">
+                        <Skeleton className="w-16 h-16 rounded-xl mb-4" />
+                        <Skeleton className="h-6 w-3/4 mb-2" />
+                        <Skeleton className="h-4 w-1/2 mb-4" />
+                        <Skeleton className="h-8 w-20 rounded-full" />
+                    </div>
+                ))}
+
+                {!loading && historyData.map((item, index) => (
                     <motion.div
                         key={item.id}
                         variants={itemVariants}
+                        initial="hidden"
+                        animate="visible"
+                        transition={{ delay: index * 0.1 }}
                         whileHover={{ scale: 1.02, translateY: -5 }}
                         className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all cursor-pointer group flex flex-col items-center text-center relative overflow-hidden"
                     >

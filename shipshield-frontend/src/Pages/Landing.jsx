@@ -1,5 +1,4 @@
 import Navbar from "../components/layout/Navbar"
-import RepoInput from "../components/ui/RepoInput"
 import {
     ShieldAlert,
     Gauge,
@@ -7,9 +6,11 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { containerVariantsStaggerBig as containerVariants, itemVariants } from "../animations/variants";
+import { useNavigate } from 'react-router-dom';
 
 
 const Landing = () => {
+    const navigate = useNavigate();
 
     const features = [
         {
@@ -42,7 +43,7 @@ const Landing = () => {
                     className="mt-10 md:mt-20 text-center max-w-4xl"
                 >
                     <h1 className="text-4xl md:text-6xl font-bold mb-4 uppercase leading-tight">
-                        Know if your<br className="hidden md:block" /> project is<br className="hidden md:block" /> ready to
+                        Know if your<br className="hidden md:block" /> project is<br className="hidden md:block" /> ready to 
                         <motion.span
                             initial={{ color: "#ffffff" }}
                             animate={{ color: "#7B5CF6" }}
@@ -54,6 +55,8 @@ const Landing = () => {
                         AI-powered auditing for your GitHub repositories. Detect security flaws,
                         performance bottlenecks, and readiness blockers in seconds.
                     </p>
+
+                
                 </motion.div>
 
                 <motion.div
