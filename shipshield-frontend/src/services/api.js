@@ -82,5 +82,23 @@ export const api = {
     }
 
     return response.json();
+  },
+
+  // NEW DEMO USER FUNCTION
+  async demoSignIn() {
+    const response = await fetch(`${API_BASE}/api/auth/signin`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        email: 'demo@shipshield.com', 
+        password: 'password' 
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Demo sign in failed: ${response.statusText}`);
+    }
+
+    return response.json();
   }
 };

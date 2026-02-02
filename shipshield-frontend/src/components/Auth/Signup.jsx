@@ -37,15 +37,13 @@ const SignUp = () => {
   };
 
   const handleDemoUser = async () => {
+    setLoading(true);
+    setError(null);
+    
     try {
-      const data = await api.signUp("demo@shipshield.com", "password");
-      localStorage.setItem('shipshield_token', data.token); 
-
-      await api.signIn("demo@shipshield.com", "password").then(loginData => {
-        localStorage.setItem('shipshield_token', loginData.token);
-        localStorage.setItem('shipshield_uid', loginData.uid);
-      });
-
+      const data = await api.demoSignIn();
+      localStorage.setItem('shipshield_token', data.token);
+      localStorage.setItem('shipshield_uid', data.uid);
       setIsModalOpen(true);
     } catch (err) {
       setError(err.message);
