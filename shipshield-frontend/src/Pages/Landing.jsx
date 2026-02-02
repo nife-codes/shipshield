@@ -43,7 +43,7 @@ const Landing = () => {
                     className="mt-10 md:mt-20 text-center max-w-4xl"
                 >
                     <h1 className="text-4xl md:text-6xl font-bold mb-4 uppercase leading-tight">
-                        Know if your<br className="hidden md:block" /> project is<br className="hidden md:block" /> ready to
+                        Know if your<br className="hidden md:block" /> project is<br className="hidden md:block" /> ready to 
                         <motion.span
                             initial={{ color: "#ffffff" }}
                             animate={{ color: "#7B5CF6" }}

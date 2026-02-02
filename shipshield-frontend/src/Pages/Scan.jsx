@@ -115,7 +115,7 @@ const Scan = () => {
       >
         <h1 className='text-black uppercase text-2xl text-center font-bold'>Analyzing Repository</h1>
         <p className='text-gray-600 font-medium text-sm text-center mt-3 px-4'>
-          ShipSafe is running a comprehensive readiness audit on <span className='bg-[#F3F4F6] px-2 py-1 rounded text-[#6B7280] font-mono break-all'>{repoUrl}</span>
+          ShipShield is running a comprehensive readiness audit on <span className='bg-[#F3F4F6] px-2 py-1 rounded text-[#6B7280] font-mono break-all'>{repoUrl}</span>
         </p>
 
         <motion.div
