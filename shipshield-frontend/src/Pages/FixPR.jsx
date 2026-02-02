@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-<<<<<<< HEAD
-import { GitPullRequest, CheckCircle } from 'lucide-react'
-=======
 import { GitPullRequest, CheckCircle, Loader2, AlertTriangle, ExternalLink, Check } from 'lucide-react'
 import CustomButton from '../components/ui/Button'
 import { api } from '../services/api'
 import { mapAnalysisData, generateFixSuggestion } from '../lib/scoring'
 import { generateFileChanges } from '../lib/fixGenerator'
->>>>>>> f30f6e2fab45f8be3ed954a178801417dc925a85
 
 const FixPR = () => {
   const [repoData, setRepoData] = useState(null)
@@ -107,33 +103,6 @@ const FixPR = () => {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-<<<<<<< HEAD
-      className="min-h-screen bg-gray-50 p-6 md:p-10"
-    >
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold text-black">Fix PR</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Review AI-generated fixes and prepare pull requests.
-        </p>
-      </header>
-
-      <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-4">
-        <div className="flex items-center gap-3 text-gray-700 font-medium">
-          <GitPullRequest size={20} />
-          Generated Pull Request
-        </div>
-
-        <p className="text-sm text-gray-500">
-          AI suggestions for fixing detected issues will appear here.
-          You can review changes before opening a pull request.
-        </p>
-
-        <div className="flex items-center gap-2 text-green-600 text-sm font-medium">
-          <CheckCircle size={16} />
-          No pending fixes yet
-        </div>
-      </div>
-=======
       className="min-h-screen bg-gray-50"
     >
       {/* Header - matching Dashboard style */}
@@ -225,18 +194,20 @@ const FixPR = () => {
                   key={fix.id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className={`px-6 py-4 cursor-pointer transition-colors hover:bg-gray-50 ${selectedFixes.has(fix.id) ? 'bg-blue-50/50' : ''
-                    }`}
+                  className={`px-6 py-4 cursor-pointer transition-colors hover:bg-gray-50 ${
+                    selectedFixes.has(fix.id) ? 'bg-blue-50/50' : ''
+                  }`}
                   onClick={() => toggleFix(fix.id)}
                 >
                   <div className="flex items-start gap-4">
                     {/* Checkbox */}
                     <div className="mt-1">
                       <div
-                        className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${selectedFixes.has(fix.id)
-                          ? 'bg-[#4F5BD5] border-[#4F5BD5]'
-                          : 'border-gray-300 bg-white'
-                          }`}
+                        className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+                          selectedFixes.has(fix.id)
+                            ? 'bg-[#4F5BD5] border-[#4F5BD5]'
+                            : 'border-gray-300 bg-white'
+                        }`}
                       >
                         {selectedFixes.has(fix.id) && (
                           <Check size={14} className="text-white" />
@@ -249,12 +220,13 @@ const FixPR = () => {
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-semibold text-black">{fix.title}</h3>
                         <span
-                          className={`text-xs font-bold px-2 py-0.5 rounded-full ${fix.severity === 'High'
-                            ? 'bg-red-100 text-red-600'
-                            : fix.severity === 'Medium'
+                          className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                            fix.severity === 'High'
+                              ? 'bg-red-100 text-red-600'
+                              : fix.severity === 'Medium'
                               ? 'bg-yellow-100 text-yellow-700'
                               : 'bg-green-100 text-green-700'
-                            }`}
+                          }`}
                         >
                           {fix.severity}
                         </span>
@@ -272,7 +244,6 @@ const FixPR = () => {
           </div>
         </div>
       </main>
->>>>>>> f30f6e2fab45f8be3ed954a178801417dc925a85
     </motion.section>
   )
 }
