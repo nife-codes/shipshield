@@ -194,18 +194,20 @@ const FixPR = () => {
                   key={fix.id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className={`px-6 py-4 cursor-pointer transition-colors hover:bg-gray-50 ${selectedFixes.has(fix.id) ? 'bg-blue-50/50' : ''
-                    }`}
+                  className={`px-6 py-4 cursor-pointer transition-colors hover:bg-gray-50 ${
+                    selectedFixes.has(fix.id) ? 'bg-blue-50/50' : ''
+                  }`}
                   onClick={() => toggleFix(fix.id)}
                 >
                   <div className="flex items-start gap-4">
                     {/* Checkbox */}
                     <div className="mt-1">
                       <div
-                        className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${selectedFixes.has(fix.id)
-                          ? 'bg-[#4F5BD5] border-[#4F5BD5]'
-                          : 'border-gray-300 bg-white'
-                          }`}
+                        className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+                          selectedFixes.has(fix.id)
+                            ? 'bg-[#4F5BD5] border-[#4F5BD5]'
+                            : 'border-gray-300 bg-white'
+                        }`}
                       >
                         {selectedFixes.has(fix.id) && (
                           <Check size={14} className="text-white" />
@@ -218,12 +220,13 @@ const FixPR = () => {
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-semibold text-black">{fix.title}</h3>
                         <span
-                          className={`text-xs font-bold px-2 py-0.5 rounded-full ${fix.severity === 'High'
-                            ? 'bg-red-100 text-red-600'
-                            : fix.severity === 'Medium'
+                          className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                            fix.severity === 'High'
+                              ? 'bg-red-100 text-red-600'
+                              : fix.severity === 'Medium'
                               ? 'bg-yellow-100 text-yellow-700'
                               : 'bg-green-100 text-green-700'
-                            }`}
+                          }`}
                         >
                           {fix.severity}
                         </span>
